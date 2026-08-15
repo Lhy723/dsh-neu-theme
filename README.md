@@ -66,12 +66,15 @@ the polling watcher and hot-reloads only this plugin's fiber.
   (`[data-chat-flow-key]` — streaming updates do not remount, so each node
   animates once), and workspace/session tree rows smooth their hover
   background (`[role='treeitem']`).
-- **Lighting, material and texture** (v6): the canvas gains ambient light
-  (top glow + faint bottom-right fill) and a fine grayscale grain texture
-  (inline SVG feTurbulence data URI) over the token background; raised cards
-  carry a 1px top-edge highlight inside their shadow and a 145° gloss
-  gradient across their surface, so surfaces read as lit material rather
-  than flat color plus shadow.
+- **Lighting, material and texture** (v6/v7): ambient light (top glow +
+  faint bottom-right fill) and a fine grayscale grain texture (inline SVG
+  feTurbulence data URI) are painted on the **visible surfaces**, not just
+  body — ConversationRoot paints an opaque bg-base, so the conversation
+  canvas (`[data-phase]`), the sidebar column and the details column each
+  carry their own light + grain; raised cards additionally carry a 1px
+  top-edge highlight inside their shadow and a 145° gloss gradient across
+  their surface, so surfaces read as lit material rather than flat color
+  plus shadow.
   All motion is CSS-only, 160–220ms, and gated under
   `@media (prefers-reduced-motion: no-preference)` (the same gate the
   official ReasoningRow shimmer uses); with reduced motion the states still
