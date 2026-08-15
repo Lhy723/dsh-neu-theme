@@ -54,12 +54,14 @@ the polling watcher and hot-reloads only this plugin's fiber.
     plus the hashed `.bubble` class) — barely-raised chips that lift 1px
     and brighten on hover;
   - **Code blocks** (`.md-code-block`, ui-primitives CodeBlock) — recessed
-    well, deepening on hover;
-  - **Tool rows** (`[data-tool]`, ui-tool ToolRow) — barely-raised cards,
-    strengthening on hover (shadow only, no transform: internal sticky
-    geometry stays anchored);
-  - **Reasoning rows** (`[data-variant='think']`, ReasoningRow) — barely
-    raised, strengthening on hover.
+    well at 16px radius, deepening on hover;
+  - **Tool rows** (`[data-tool]`, ui-tool ToolRow) — unified raised cards
+    (same-family surface + 12px radius), so an outer call and its nested
+    indented sub-calls (e.g. the bash row under run_code) read as one
+    language; strengthening on hover (shadow only, no transform: internal
+    sticky geometry stays anchored);
+  - **Reasoning rows** (`[data-variant='think']`, ReasoningRow) — the same
+    card language as tool rows (12px radius), strengthening on hover.
   Plus two ambient motions: conversation nodes fade in 220ms as they mount
   (`[data-chat-flow-key]` — streaming updates do not remount, so each node
   animates once), and workspace/session tree rows smooth their hover
