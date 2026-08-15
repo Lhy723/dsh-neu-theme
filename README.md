@@ -46,16 +46,28 @@ the polling watcher and hot-reloads only this plugin's fiber.
   indirection) and covers the semantic alias layer plus the `--shiki-*`
   syntax palette.
 - The shadow + micro-motion layer (`NEU_CSS` in `src/client.tpl.js`)
-  targets exactly three surfaces, each verified in the official UI sources:
+  targets six surfaces, each verified in the official UI sources:
   - **Sidebar column** (`[class*='sidebarCol']`, AppFrame) — soft raised card;
-  - **Composer capsule** (`[data-composer-card]`, InputBar) — pressed-in well,
-    deepening on hover and `:focus-within` (keyboard reachable);
+  - **Composer capsule** (`[data-composer-card]`, InputBar) — pressed-in
+    well, deepening on hover and `:focus-within` (keyboard reachable);
   - **User/steering bubbles** (`[data-chat-flow-kind='user'|'steering']`
     plus the hashed `.bubble` class) — barely-raised chips that lift 1px
-    and brighten on hover.
-  All motion is CSS-only, 160ms, and gated under
-  `@media (prefers-reduced-motion: no-preference)`; with reduced motion the
-  states still switch, just without transitions.
+    and brighten on hover;
+  - **Code blocks** (`.md-code-block`, ui-primitives CodeBlock) — recessed
+    well, deepening on hover;
+  - **Tool rows** (`[data-tool]`, ui-tool ToolRow) — barely-raised cards,
+    strengthening on hover (shadow only, no transform: internal sticky
+    geometry stays anchored);
+  - **Reasoning rows** (`[data-variant='think']`, ReasoningRow) — barely
+    raised, strengthening on hover.
+  Plus two ambient motions: conversation nodes fade in 220ms as they mount
+  (`[data-chat-flow-key]` — streaming updates do not remount, so each node
+  animates once), and workspace/session tree rows smooth their hover
+  background (`[role='treeitem']`).
+  All motion is CSS-only, 160–220ms, and gated under
+  `@media (prefers-reduced-motion: no-preference)` (the same gate the
+  official ReasoningRow shimmer uses); with reduced motion the states still
+  switch, just without transitions.
 - **The shadow layer is preference-gated**: it mounts only while
   `neu-light` or `neu-dark` is the active preference (driven by
   `theme/change`), so selecting **Default** leaves the document exactly as
