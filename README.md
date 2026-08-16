@@ -75,6 +75,12 @@ the polling watcher and hot-reloads only this plugin's fiber.
   top-edge highlight inside their shadow and a 145° gloss gradient across
   their surface, so surfaces read as lit material rather than flat color
   plus shadow.
+- **Layered shadows, material and texture** (v11): raised surfaces now
+  carry a three-layer shadow (1px contact shadow, main cast shadow,
+  top-edge highlight), the sidebar gloss follows the light direction
+  (145°), and code blocks gained a material surface (dark backlit inner
+  top wall + grain), joining the ambient light and grain already painted
+  on the conversation canvas, sidebar and details column.
   All motion is CSS-only, 160–220ms, and gated under
   `@media (prefers-reduced-motion: no-preference)` (the same gate the
   official ReasoningRow shimmer uses); with reduced motion the states still
