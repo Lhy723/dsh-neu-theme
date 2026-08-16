@@ -1,4 +1,11 @@
+<p align="center">
+  <img src=".github/asset/dsh-neu-theme-hero.png" alt="dsh-neu-theme — DeepSeek Harness 轻拟物与磨砂玻璃主题" width="1280">
+</p>
+
 # dsh-neu-theme
+
+[![npm version](https://img.shields.io/npm/v/dsh-neu-theme?logo=npm)](https://www.npmjs.com/package/dsh-neu-theme)
+[![npm downloads](https://img.shields.io/npm/dm/dsh-neu-theme?logo=npm)](https://www.npmjs.com/package/dsh-neu-theme)
 
 **DeepSeek Harness web 的轻拟物(Soft-UI)主题插件**——奶油浅色与墨蓝深色两套配色,
 完整的光影、材质、纹理、磨砂玻璃与微交互动画。
@@ -24,17 +31,42 @@ English version: [README.md](README.md)。
 - **默认即原生** — 选 Default(或从未选择)时,页面与 dsh 原生完全一致:
   不注入样式、不打 body 标记、原生颜色与阴影
 
+## 预览
+
+### Neu Light
+
+<p align="center">
+  <img src=".github/asset/light.webp" alt="dsh-neu-theme Neu Light 预览" width="100%">
+</p>
+
+### Neu Dark
+
+<p align="center">
+  <img src=".github/asset/dark.webp" alt="dsh-neu-theme Neu Dark 预览" width="100%">
+</p>
+
 ## 安装
 
+从 npm 安装已发布的包到 dsh profile（适用于 `web` profile）：
+
 ```sh
-dsh plugin --profile web add <路径或 git 地址>
-# 本地开发:
+dsh plugin --profile web add dsh-neu-theme
+# 或手动安装到 web profile：
 cd ~/.dsh/profiles/web
-pnpm add file:/path/to/dsh-neu-theme
+pnpm add dsh-neu-theme
 ```
+
+这个包也可以在 [npm](https://www.npmjs.com/package/dsh-neu-theme) 查看。
 
 然后把 `"dsh-neu-theme"` 加入 profile `package.json` 的
 `dsh.profile.bundles`,重启 `dsh web`。
+
+本地开发时，可以安装本地路径：
+
+```sh
+cd ~/.dsh/profiles/web
+pnpm add file:/path/to/dsh-neu-theme
+```
 
 使用:**设置 → 通用 → Neumorphism theme** 选择 **Default / Neu Light / Neu Dark**。
 选择存储在 `localStorage` 的 `dsh-neu:skin`(清除该键即回到内置外观)。
