@@ -75,12 +75,21 @@ the polling watcher and hot-reloads only this plugin's fiber.
   top-edge highlight inside their shadow and a 145° gloss gradient across
   their surface, so surfaces read as lit material rather than flat color
   plus shadow.
-- **Layered shadows, material and texture** (v11): raised surfaces now
+- **Layered shadows, material and texture** (v11/v12): raised surfaces now
   carry a three-layer shadow (1px contact shadow, main cast shadow,
   top-edge highlight), the sidebar gloss follows the light direction
   (145°), and code blocks gained a material surface (dark backlit inner
   top wall + grain), joining the ambient light and grain already painted
-  on the conversation canvas, sidebar and details column.
+  on the conversation canvas, sidebar and details column. The sidebar
+  additionally got its own stronger raise (and a fill that separates from
+  the canvas — lighter in light mode, lifted in dark mode — the dark rule
+  was previously missing its shadow entirely).
+- **Glassmorphism** (v12): floating surfaces turn frosted — dropdown
+  menus (`[role='menu']`, covering PermissionSelect, ModelSelect and the
+  shared Menu) and the composer-side context panel
+  (`[data-composer-card] [role='dialog']`, ContextMeter) get a translucent
+  `bg-overlay` at 62–70% plus `backdrop-filter: blur(16px) saturate(1.3)`,
+  so the ambient light behind them glows through.
   All motion is CSS-only, 160–220ms, and gated under
   `@media (prefers-reduced-motion: no-preference)` (the same gate the
   official ReasoningRow shimmer uses); with reduced motion the states still
