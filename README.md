@@ -1,5 +1,5 @@
 <p align="center">
-  <img src=".github/asset/dsh-neu-theme-hero.webp" alt="dsh-neu-theme — Neumorphism and Glassmorphism for DeepSeek Harness" width="1280">
+  <img src=".github/asset/dsh-neu-theme-hero.png" alt="dsh-neu-theme — Neumorphism and Glassmorphism for DeepSeek Harness" width="1280">
 </p>
 
 # dsh-neu-theme
