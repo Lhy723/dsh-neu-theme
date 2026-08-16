@@ -281,11 +281,11 @@ window.__ModuleLoader__.load({
 
 		/** Simplified Chinese dictionary (the key-set source of truth). */
 		const zh = {
-			"skin.title": "轻拟物主题",
-			"skin.caption": "柔和同色系 · 浮起与凹陷",
-			"skin.default": "默认",
-			"skin.neu-light": "浅色",
-			"skin.neu-dark": "深色"
+			"skin.title": "Neumorphism theme",
+			"skin.caption": "Soft UI · gentle depth",
+			"skin.default": "Default",
+			"skin.neu-light": "Neu Light",
+			"skin.neu-dark": "Neu Dark"
 		};
 
 		/** English dictionary, checked complete against the zh key set. */
