@@ -4,6 +4,9 @@
 
 # dsh-neu-theme
 
+[![npm version](https://img.shields.io/npm/v/dsh-neu-theme?logo=npm)](https://www.npmjs.com/package/dsh-neu-theme)
+[![npm downloads](https://img.shields.io/npm/dm/dsh-neu-theme?logo=npm)](https://www.npmjs.com/package/dsh-neu-theme)
+
 A Neumorphism (soft-UI) theme plugin for **DeepSeek Harness web** — gentle
 raised-and-recessed surfaces in a cream light palette and an ink-dark
 palette, complete with ambient lighting, material gloss, grain texture,
@@ -54,14 +57,17 @@ glassmorphism and micro-interactions.
 
 ## Install
 
-Install into a dsh profile (works with the `web` profile):
+Install the published package into a dsh profile (works with the `web`
+profile):
 
 ```sh
-dsh plugin --profile web add <path-or-git-url>
-# or, for a local checkout:
+dsh plugin --profile web add dsh-neu-theme
+# or install manually in the web profile:
 cd ~/.dsh/profiles/web
-pnpm add file:/path/to/dsh-neu-theme
+pnpm add dsh-neu-theme
 ```
+
+The package is also available on [npm](https://www.npmjs.com/package/dsh-neu-theme).
 
 Then add `"dsh-neu-theme"` to `dsh.profile.bundles` in the profile's
 `package.json`, and restart `dsh web`.
