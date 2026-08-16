@@ -16,6 +16,7 @@
     "cordis.patch.yml",
     "themes",
     "README.md",
+    ".github/asset/*.webp",
     "LICENSE",
     "README.zh.md"
   ],

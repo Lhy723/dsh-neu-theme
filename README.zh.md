@@ -62,20 +62,6 @@ dsh-neu-theme/
 └── lib/                  # 生成产物(git 忽略)
 ```
 
-## 设计说明
-
-- **选择器纪律**:每条 CSS 钩子都在官方 UI 源码中验证过 —
-  `[class*='sidebarCol']`(AppFrame)、`[data-composer-card]` 与
-  `[data-input-scroll]`(InputBar)、`[data-chat-flow-kind]` + `.bubble`
-  (ChatNodeSeat/MessageItem)、`.md-code-block`(CodeBlock)、`[data-tool]`
-  (ToolRow)、`[data-variant='think']`(ReasoningRow)、`[role='menu']` /
-  `[role='dialog']`(Menu/ContextMeter);不添加未经验证的猜测选择器
-- **伪元素磨砂**:输入栏的 `backdrop-filter` 放在
-  `[data-composer-card]::before`(非祖先伪元素)上,使卡片不是内部
-  菜单/面板的 backdrop root——它们保留自己的真实模糊
-- **明暗切换纯 CSS**:依赖 `body[data-ds-dark-theme]`,与 token 层机制一致
-- 主题选择存 localStorage,因为 Host settings 只对浏览器客户端开放白名单命名空间
-
 ## License
 
 MIT

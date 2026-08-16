@@ -1,3 +1,7 @@
+<p align="center">
+  <img src=".github/asset/dsh-neu-theme-hero.webp" alt="dsh-neu-theme — Neumorphism and Glassmorphism for DeepSeek Harness" width="1280">
+</p>
+
 # dsh-neu-theme
 
 A Neumorphism (soft-UI) theme plugin for **DeepSeek Harness web** — gentle
@@ -33,6 +37,20 @@ glassmorphism and micro-interactions.
 - **Default is pristine** — selecting Default (or having no saved skin)
   leaves the document exactly as dsh ships it: no injected stylesheet, no
   body attribute, native colors and shadows.
+
+## Preview
+
+### Neu Light
+
+<p align="center">
+  <img src=".github/asset/light.webp" alt="dsh-neu-theme Neu Light preview" width="100%">
+</p>
+
+### Neu Dark
+
+<p align="center">
+  <img src=".github/asset/dark.webp" alt="dsh-neu-theme Neu Dark preview" width="100%">
+</p>
 
 ## Install
 
@@ -77,24 +95,6 @@ dsh-neu-theme/
 ├── scripts/build.mjs     # zero-dependency build
 └── lib/                  # generated artifacts (gitignored)
 ```
-
-## Design notes
-
-- **Selector discipline**: every CSS hook is verified against the official
-  UI sources — `[class*='sidebarCol']` (AppFrame), `[data-composer-card]`
-  and `[data-input-scroll]` (InputBar), `[data-chat-flow-kind]` +
-  `.bubble` (ChatNodeSeat/MessageItem), `.md-code-block` (CodeBlock),
-  `[data-tool]` (ToolRow), `[data-variant='think']` (ReasoningRow),
-  `[role='menu']` / `[role='dialog']` (Menu/ContextMeter). Unverified
-  guesses are never added.
-- **Pseudo-layer frost**: the composer's `backdrop-filter` lives on
-  `[data-composer-card]::before` (a non-ancestor pseudo-element) so the
-  card is not the backdrop root of the menus/dialogs rendered inside it —
-  they keep their own real blur.
-- **Light/dark switching is pure CSS** via `body[data-ds-dark-theme]`,
-  matching the token layer's own mechanism.
-- Theme choice persists in localStorage because the Host settings wire only
-  exposes an allowlisted set of namespaces to browser clients.
 
 ## License
 
