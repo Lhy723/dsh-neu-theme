@@ -1,22 +1,42 @@
 # dsh-neu-theme
 
-Neumorphism soft-UI theme for DeepSeek Harness web — gentle raised-and-recessed
-surfaces in a cream light palette and an ink-dark palette. 轻拟物主题:柔和同色系、
-浮起与凹陷,奶油浅色与墨蓝深色两套配色。
+A Neumorphism (soft-UI) theme plugin for **DeepSeek Harness web** — gentle
+raised-and-recessed surfaces in a cream light palette and an ink-dark
+palette, complete with ambient lighting, material gloss, grain texture,
+glassmorphism and micro-interactions.
+
+中文说明见 [README.zh.md](README.zh.md)。
 
 ## Features
 
 - **Two themes** registered into the built-in ThemeRuntime:
   - `neu-light` — cream warm-white canvas, soft slate-blue accent
   - `neu-dark` — ink-blue night canvas, luminous indigo accent
-- **Soft-UI shadow layer** — a small defensive stylesheet adds neumorphic
-  raise/recess shadows to the sidebar, conversation scrollport, composer seat
-  and chat bubbles, scoped under `body[data-dsh-neu]` and switched by the
-  palette attribute (no JavaScript on theme switch).
+- **Lighting** — ambient top glow + corner fill painted on the visible
+  surfaces (conversation canvas, sidebar, details column), not just body.
+- **Material** — three-layer shadows (contact + cast + top-edge highlight),
+  145° gloss gradients aligned to the light direction, code blocks with a
+  backlit inner wall.
+- **Texture** — fine grayscale grain (inline SVG feTurbulence) over the
+  canvas, sidebar, details column and code blocks.
+- **Glassmorphism** — the composer capsule and its popovers (permission
+  menu, model menu, context panel) share one frosted-glass language: the
+  card's blur lives on a `::before` pseudo-layer so the nested popovers
+  keep their own real `backdrop-filter` blur (the card is not their
+  backdrop root).
+- **Micro-interactions** — conversation nodes fade in on mount, bubbles
+  lift on hover, the composer recess deepens on hover/focus, tool rows and
+  reasoning rows strengthen on hover; all gated under
+  `@media (prefers-reduced-motion: no-preference)`.
 - **Settings row** — Settings → General gains a Neumorphism picker
-  (Default / Light / Dark) with palette swatches, persisted in localStorage.
+  (Default / Neu Light / Neu Dark), persisted in localStorage.
+- **Default is pristine** — selecting Default (or having no saved skin)
+  leaves the document exactly as dsh ships it: no injected stylesheet, no
+  body attribute, native colors and shadows.
 
 ## Install
+
+Install into a dsh profile (works with the `web` profile):
 
 ```sh
 dsh plugin --profile web add <path-or-git-url>
@@ -26,8 +46,12 @@ pnpm add file:/path/to/dsh-neu-theme
 ```
 
 Then add `"dsh-neu-theme"` to `dsh.profile.bundles` in the profile's
-`package.json`, and restart `dsh web`. The theme choice itself is applied
-in-browser via Settings → General → 轻拟物主题.
+`package.json`, and restart `dsh web`.
+
+Once running: **Settings → General → Neumorphism theme** → pick
+**Default / Neu Light / Neu Dark**. The choice is stored in
+`localStorage` under `dsh-neu:skin` (clear the key to go back to the
+built-in appearance).
 
 ## Develop
 
@@ -36,75 +60,41 @@ npm run build   # regenerates lib/client.js from src/client.tpl.js + themes/*.js
 npm run check   # syntax-checks the built bundles
 ```
 
-While `dsh web` runs with the HMR chain mounted, any rebuild of
-`lib/client.js` (e.g. `node scripts/build.mjs`) is picked up by
-the polling watcher and hot-reloads only this plugin's fiber.
+While `dsh web` runs with the HMR chain mounted, rebuilding
+`lib/client.js` is picked up by the polling watcher and hot-reloads only
+this plugin's fiber.
+
+## Repository layout
+
+```
+dsh-neu-theme/
+├── package.json          # dsh.bundle.patch + dsh.client manifest
+├── cordis.patch.yml      # loader entry insert (id: neu-theme)
+├── themes/               # neu-light.json / neu-dark.json — the palettes
+├── src/
+│   ├── index.js          # host half (no-op loader entry)
+│   └── client.tpl.js     # browser half template (build injects themes)
+├── scripts/build.mjs     # zero-dependency build
+└── lib/                  # generated artifacts (gitignored)
+```
 
 ## Design notes
 
-- Colors live in `themes/*.json`; every value is concrete (no `var()`
-  indirection) and covers the semantic alias layer plus the `--shiki-*`
-  syntax palette.
-- The shadow + micro-motion layer (`NEU_CSS` in `src/client.tpl.js`)
-  targets six surfaces, each verified in the official UI sources:
-  - **Sidebar column** (`[class*='sidebarCol']`, AppFrame) — soft raised card;
-  - **Composer capsule** (`[data-composer-card]`, InputBar) — pressed-in
-    well, deepening on hover and `:focus-within` (keyboard reachable);
-  - **User/steering bubbles** (`[data-chat-flow-kind='user'|'steering']`
-    plus the hashed `.bubble` class) — barely-raised chips that lift 1px
-    and brighten on hover;
-  - **Code blocks** (`.md-code-block`, ui-primitives CodeBlock) — recessed
-    well at 16px radius, deepening on hover;
-  - **Tool rows** (`[data-tool]`, ui-tool ToolRow) — unified raised cards
-    (same-family surface + 12px radius), so an outer call and its nested
-    indented sub-calls (e.g. the bash row under run_code) read as one
-    language; strengthening on hover (shadow only, no transform: internal
-    sticky geometry stays anchored);
-  - **Reasoning rows** (`[data-variant='think']`, ReasoningRow) — the same
-    card language as tool rows (12px radius), strengthening on hover.
-  Plus two ambient motions: conversation nodes fade in 220ms as they mount
-  (`[data-chat-flow-key]` — streaming updates do not remount, so each node
-  animates once), and workspace/session tree rows smooth their hover
-  background (`[role='treeitem']`).
-- **Lighting, material and texture** (v6/v7): ambient light (top glow +
-  faint bottom-right fill) and a fine grayscale grain texture (inline SVG
-  feTurbulence data URI) are painted on the **visible surfaces**, not just
-  body — ConversationRoot paints an opaque bg-base, so the conversation
-  canvas (`[data-phase]`), the sidebar column and the details column each
-  carry their own light + grain; raised cards additionally carry a 1px
-  top-edge highlight inside their shadow and a 145° gloss gradient across
-  their surface, so surfaces read as lit material rather than flat color
-  plus shadow.
-- **Layered shadows, material and texture** (v11/v12): raised surfaces now
-  carry a three-layer shadow (1px contact shadow, main cast shadow,
-  top-edge highlight), the sidebar gloss follows the light direction
-  (145°), and code blocks gained a material surface (dark backlit inner
-  top wall + grain), joining the ambient light and grain already painted
-  on the conversation canvas, sidebar and details column. The sidebar
-  additionally got its own stronger raise (and a fill that separates from
-  the canvas — lighter in light mode, lifted in dark mode — the dark rule
-  was previously missing its shadow entirely).
-- **Glassmorphism** (v12): floating surfaces turn frosted — dropdown
-  menus (`[role='menu']`, covering PermissionSelect, ModelSelect and the
-  shared Menu) and the composer-side context panel
-  (`[data-composer-card] [role='dialog']`, ContextMeter) get a translucent
-  `bg-overlay` at 62–70% plus `backdrop-filter: blur(16px) saturate(1.3)`,
-  so the ambient light behind them glows through.
-  All motion is CSS-only, 160–220ms, and gated under
-  `@media (prefers-reduced-motion: no-preference)` (the same gate the
-  official ReasoningRow shimmer uses); with reduced motion the states still
-  switch, just without transitions.
-- **The shadow layer is preference-gated**: it mounts only while
-  `neu-light` or `neu-dark` is the active preference (driven by
-  `theme/change`), so selecting **Default** leaves the document exactly as
-  dsh ships it — native colors and native shadows, with no `data-dsh-neu`
-  attribute and no injected stylesheet.
-- Want shadows on more surfaces? Inspect the element in DevTools and note
-  its stable hook (a `data-*` attribute, or the readable part of the
-  hashed class), then add a scoped rule — that is the only safe way to
-  extend the layer.
-- Light/dark switching is pure CSS (`body[data-ds-dark-theme]`), matching
-  the token layer's own mechanism.
+- **Selector discipline**: every CSS hook is verified against the official
+  UI sources — `[class*='sidebarCol']` (AppFrame), `[data-composer-card]`
+  and `[data-input-scroll]` (InputBar), `[data-chat-flow-kind]` +
+  `.bubble` (ChatNodeSeat/MessageItem), `.md-code-block` (CodeBlock),
+  `[data-tool]` (ToolRow), `[data-variant='think']` (ReasoningRow),
+  `[role='menu']` / `[role='dialog']` (Menu/ContextMeter). Unverified
+  guesses are never added.
+- **Pseudo-layer frost**: the composer's `backdrop-filter` lives on
+  `[data-composer-card]::before` (a non-ancestor pseudo-element) so the
+  card is not the backdrop root of the menus/dialogs rendered inside it —
+  they keep their own real blur.
+- **Light/dark switching is pure CSS** via `body[data-ds-dark-theme]`,
+  matching the token layer's own mechanism.
+- Theme choice persists in localStorage because the Host settings wire only
+  exposes an allowlisted set of namespaces to browser clients.
 
 ## License
 

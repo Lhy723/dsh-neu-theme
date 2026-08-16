@@ -15,7 +15,9 @@
     "lib/client.js",
     "cordis.patch.yml",
     "themes",
-    "README.md"
+    "README.md",
+    "LICENSE",
+    "README.zh.md"
   ],
   "keywords": [
     "deepseek-harness",
@@ -53,5 +55,14 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "check": "node --check lib/client.js && node --check lib/index.js"
+  },
+  "author": "Lhy723",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Lhy723/dsh-neu-theme.git"
+  },
+  "homepage": "https://github.com/Lhy723/dsh-neu-theme",
+  "bugs": {
+    "url": "https://github.com/Lhy723/dsh-neu-theme/issues"
   }
 }
