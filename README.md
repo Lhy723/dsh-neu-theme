@@ -36,7 +36,8 @@ glassmorphism and micro-interactions.
   reasoning rows strengthen on hover; all gated under
   `@media (prefers-reduced-motion: no-preference)`.
 - **Settings row** — Settings → General gains a Neumorphism picker
-  (Default / Neu Light / Neu Dark), persisted in localStorage.
+  (Default / Neu Light / Neu Dark), persisted through the Host settings
+  document.
 - **Default is pristine** — selecting Default (or having no saved skin)
   leaves the document exactly as dsh ships it: no injected stylesheet, no
   body attribute, native colors and shadows.
@@ -73,9 +74,13 @@ Then add `"dsh-neu-theme"` to `dsh.profile.bundles` in the profile's
 `package.json`, and restart `dsh web`.
 
 Once running: **Settings → General → Neumorphism theme** → pick
-**Default / Neu Light / Neu Dark**. The choice is stored in
-`localStorage` under `dsh-neu:skin` (clear the key to go back to the
-built-in appearance).
+**Default / Neu Light / Neu Dark**. The choice is stored in the Host settings
+namespace `dsh-neu-theme` (normally `~/.dsh/settings.yaml`); choose **Default**
+to return to the built-in appearance.
+
+The Host-backed settings path requires DSH Web Host `0.1.1-rc.2` or newer.
+Remote browsers cannot access the loopback settings API, so their selection
+remains process-local by design.
 
 ## Develop
 

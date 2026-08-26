@@ -27,7 +27,7 @@ English version: [README.md](README.md)。
 - **微交互动画** — 对话节点挂载淡入、气泡 hover 上浮、输入区聚焦凹陷加深、
   工具行与思考行 hover 增强;全部受 `prefers-reduced-motion` 保护
 - **设置入口** — 设置 → 通用 → Neumorphism theme(Default / Neu Light / Neu Dark),
-  选择持久化在 localStorage
+  选择通过 Host settings 文档持久化
 - **默认即原生** — 选 Default(或从未选择)时,页面与 dsh 原生完全一致:
   不注入样式、不打 body 标记、原生颜色与阴影
 
@@ -69,7 +69,11 @@ pnpm add file:/path/to/dsh-neu-theme
 ```
 
 使用:**设置 → 通用 → Neumorphism theme** 选择 **Default / Neu Light / Neu Dark**。
-选择存储在 `localStorage` 的 `dsh-neu:skin`(清除该键即回到内置外观)。
+选择存储在 Host settings 命名空间 `dsh-neu-theme`（通常为
+`~/.dsh/settings.yaml`）；选择 **Default** 即回到内置外观。
+
+Host-backed settings 需要 DSH Web Host `0.1.1-rc.2` 或更新版本。远程浏览器
+无法访问 loopback settings API，因此远程页面的选择按设计只在当前进程内生效。
 
 ## 开发
 

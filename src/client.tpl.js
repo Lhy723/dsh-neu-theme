@@ -19,8 +19,10 @@ window.__ModuleLoader__.load({
 		//#region dsh-neu-theme: definitions
 		/** The settings row's locale namespace. */
 		const SETTINGS_NS = "settings.neu";
-		/** localStorage key holding the selected theme id. */
-		const STORAGE_KEY = "dsh-neu:skin";
+		/** Host settings namespace holding the selected skin id. */
+		const SKIN_SETTINGS_NAMESPACE = "dsh-neu-theme";
+		/** Host settings field carrying the selected skin id. */
+		const SKIN_SETTINGS_FIELD = "preference";
 		/** Sentinel meaning "no custom theme — follow the built-in appearance". */
 		const DEFAULT_SKIN = "system";
 
@@ -59,26 +61,25 @@ window.__ModuleLoader__.load({
 			"body[data-dsh-neu] {",
 						"  --dsh-neu-raise: inset 0 1px 0 rgba(255, 255, 255, 0.85), 0 1px 2px rgba(122, 118, 108, 0.18), 6px 6px 14px rgba(122, 118, 108, 0.22), -6px -6px 14px rgba(255, 255, 255, 0.85);",
 						"  --dsh-neu-raise-sm: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 1px 2px rgba(122, 118, 108, 0.14), 3px 3px 8px rgba(122, 118, 108, 0.18), -3px -3px 8px rgba(255, 255, 255, 0.75);",
+						"  /* Cards get a neutral halo in addition to the directional highlight,",
+						"     so all four edges remain readable on a flat conversation canvas. */",
+						"  --dsh-neu-card-raise: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 0 0 1px rgba(122, 118, 108, 0.08), 0 0 8px 1px rgba(122, 118, 108, 0.14), -3px -3px 8px rgba(255, 255, 255, 0.7);",
+						"  --dsh-neu-card-raise-strong: inset 0 1px 0 rgba(255, 255, 255, 0.85), 0 0 0 1px rgba(122, 118, 108, 0.08), 0 0 14px 1px rgba(122, 118, 108, 0.18), -6px -6px 14px rgba(255, 255, 255, 0.82);",
 			"  --dsh-neu-inset: inset 3px 3px 8px rgba(122, 118, 108, 0.16), inset -3px -3px 8px rgba(255, 255, 255, 0.3);",
 			"  --dsh-neu-inset-focus: inset 4px 4px 10px rgba(122, 118, 108, 0.22), inset -4px -4px 10px rgba(255, 255, 255, 0.4);",
-			"  /* Ambient light: a soft top glow plus a faint bottom-right fill,",
-			"     then a fine grain texture over the whole canvas. background-image",
-			"     layers on top of the shell background (higher specificity), so the",
-			"     token background-color stays intact. */",
-			"  background-image:",
-			"    radial-gradient(1400px 900px at 50% -8%, rgba(255, 255, 255, 0.72), transparent 62%),",
-			"    radial-gradient(900px 600px at 85% 110%, rgba(255, 255, 255, 0.3), transparent 60%),",
-			    "url(\"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27160%27 height=%27160%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.8%27 numOctaves=%272%27 stitchTiles=%27stitch%27/%3E%3CfeColorMatrix type=%27saturate%27 values=%270%27/%3E%3C/filter%3E%3Crect width=%27160%27 height=%27160%27 filter=%27url(%23n)%27 opacity=%270.08%27/%3E%3C/svg%3E\");",
+			"  /* Keep the shell lighting uniform. Broad radial layers form a visible",
+			"     oval on high-DPI windows, so the theme uses only a restrained grain",
+			"     texture over the token background. */",
+			"  background-image: url(\"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27160%27 height=%27160%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.8%27 numOctaves=%272%27 stitchTiles=%27stitch%27/%3E%3CfeColorMatrix type=%27saturate%27 values=%270%27/%3E%3C/filter%3E%3Crect width=%27160%27 height=%27160%27 filter=%27url(%23n)%27 opacity=%270.08%27/%3E%3C/svg%3E\");",
 			"}",
 			"body[data-dsh-neu][data-ds-dark-theme] {",
 						"  --dsh-neu-raise: inset 0 1px 0 rgba(255, 255, 255, 0.13), 0 1px 2px rgba(0, 0, 0, 0.4), 6px 6px 14px rgba(0, 0, 0, 0.45), -6px -6px 14px rgba(255, 255, 255, 0.05);",
 						"  --dsh-neu-raise-sm: inset 0 1px 0 rgba(255, 255, 255, 0.11), 0 1px 2px rgba(0, 0, 0, 0.32), 3px 3px 8px rgba(0, 0, 0, 0.4), -3px -3px 8px rgba(255, 255, 255, 0.04);",
+						"  --dsh-neu-card-raise: inset 0 1px 0 rgba(255, 255, 255, 0.11), 0 0 0 1px rgba(0, 0, 0, 0.2), 0 0 8px 1px rgba(0, 0, 0, 0.32), -3px -3px 8px rgba(255, 255, 255, 0.04);",
+						"  --dsh-neu-card-raise-strong: inset 0 1px 0 rgba(255, 255, 255, 0.13), 0 0 0 1px rgba(0, 0, 0, 0.24), 0 0 14px 1px rgba(0, 0, 0, 0.38), -6px -6px 14px rgba(255, 255, 255, 0.05);",
 			"  --dsh-neu-inset: inset 3px 3px 8px rgba(0, 0, 0, 0.5), inset -3px -3px 8px rgba(255, 255, 255, 0.06);",
 			"  --dsh-neu-inset-focus: inset 4px 4px 10px rgba(0, 0, 0, 0.6), inset -4px -4px 10px rgba(255, 255, 255, 0.08);",
-			"  background-image:",
-			"    radial-gradient(1400px 900px at 50% -8%, rgba(255, 255, 255, 0.06), transparent 62%),",
-			"    radial-gradient(900px 600px at 85% 110%, rgba(0, 0, 0, 0.4), transparent 60%),",
-			    "url(\"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27160%27 height=%27160%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.8%27 numOctaves=%272%27 stitchTiles=%27stitch%27/%3E%3CfeColorMatrix type=%27saturate%27 values=%270%27/%3E%3C/filter%3E%3Crect width=%27160%27 height=%27160%27 filter=%27url(%23n)%27 opacity=%270.1%27/%3E%3C/svg%3E\");",
+			"  background-image: url(\"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27160%27 height=%27160%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.8%27 numOctaves=%272%27 stitchTiles=%27stitch%27/%3E%3CfeColorMatrix type=%27saturate%27 values=%270%27/%3E%3C/filter%3E%3Crect width=%27160%27 height=%27160%27 filter=%27url(%23n)%27 opacity=%270.1%27/%3E%3C/svg%3E\");",
 			"}",
 			"/* Sidebar column: a soft raised card over the canvas (AppFrame's",
 			"   css.sidebarCol — verified in ui-layout sources). */",
@@ -147,15 +148,15 @@ window.__ModuleLoader__.load({
 			"  background-color: color-mix(in srgb, var(--dsw-specific-input-major) 45%, transparent);",
 			"}",
 
+			"/* Keep the conversation canvas uniform. A large radial spotlight here",
+			"   creates a visible oval boundary over messages on wide/high-DPI windows;",
+			"   ambient lighting belongs to the full page, while the canvas only needs",
+			"   the fine grain texture. */",
 			"body[data-dsh-neu] div[data-phase] {",
-			"  background-image:",
-			"    radial-gradient(1100px 700px at 50% -6%, rgba(255, 255, 255, 0.55), transparent 62%),",
-			"    url(\"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27160%27 height=%27160%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.8%27 numOctaves=%272%27 stitchTiles=%27stitch%27/%3E%3CfeColorMatrix type=%27saturate%27 values=%270%27/%3E%3C/filter%3E%3Crect width=%27160%27 height=%27160%27 filter=%27url(%23n)%27 opacity=%270.08%27/%3E%3C/svg%3E\");",
+			"  background-image: url(\"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27160%27 height=%27160%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.8%27 numOctaves=%272%27 stitchTiles=%27stitch%27/%3E%3CfeColorMatrix type=%27saturate%27 values=%270%27/%3E%3C/filter%3E%3Crect width=%27160%27 height=%27160%27 filter=%27url(%23n)%27 opacity=%270.08%27/%3E%3C/svg%3E\");",
 			"}",
 			"body[data-dsh-neu][data-ds-dark-theme] div[data-phase] {",
-			"  background-image:",
-			"    radial-gradient(1100px 700px at 50% -6%, rgba(255, 255, 255, 0.055), transparent 62%),",
-			"    url(\"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27160%27 height=%27160%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.8%27 numOctaves=%272%27 stitchTiles=%27stitch%27/%3E%3CfeColorMatrix type=%27saturate%27 values=%270%27/%3E%3C/filter%3E%3Crect width=%27160%27 height=%27160%27 filter=%27url(%23n)%27 opacity=%270.1%27/%3E%3C/svg%3E\");",
+			"  background-image: url(\"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27160%27 height=%27160%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.8%27 numOctaves=%272%27 stitchTiles=%27stitch%27/%3E%3CfeColorMatrix type=%27saturate%27 values=%270%27/%3E%3C/filter%3E%3Crect width=%27160%27 height=%27160%27 filter=%27url(%23n)%27 opacity=%270.1%27/%3E%3C/svg%3E\");",
 			"}",
 			"/* Details panel keeps the same grain. */",
 			"body[data-dsh-neu] [class*='detailsCol'] {",
@@ -199,8 +200,9 @@ window.__ModuleLoader__.load({
 			"body[data-dsh-neu] [data-tool] {",
 			"  background-color: var(--dsw-alias-bg-layer-1);",
 			"  background-image: linear-gradient(145deg, rgba(255, 255, 255, 0.68), rgba(255, 255, 255, 0) 42%);",
-			"  border-radius: 12px;",
-			"  box-shadow: var(--dsh-neu-raise-sm);",
+			"  border-radius: 8px;",
+			"  overflow: visible;",
+			"  box-shadow: var(--dsh-neu-card-raise);",
 			"}",
 			"body[data-dsh-neu][data-ds-dark-theme] [data-tool] {",
 			"  background-image: linear-gradient(145deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0) 42%);",
@@ -210,11 +212,21 @@ window.__ModuleLoader__.load({
 			"body[data-dsh-neu] [data-variant='think'] {",
 			"  background-color: var(--dsw-alias-bg-layer-1);",
 			"  background-image: linear-gradient(145deg, rgba(255, 255, 255, 0.68), rgba(255, 255, 255, 0) 42%);",
-			"  border-radius: 12px;",
-			"  box-shadow: var(--dsh-neu-raise-sm);",
+			"  /* Think rows can expand into multi-line reasoning. Use a normal card",
+			"     radius so they never turn into a capsule when expanded. Keep the",
+			"     root unclipped so its soft shadow can extend on all four sides. */",
+			"  border-radius: 8px;",
+			"  overflow: visible;",
+			"  box-shadow: var(--dsh-neu-card-raise);",
 			"}",
 			"body[data-dsh-neu][data-ds-dark-theme] [data-variant='think'] {",
 			"  background-image: linear-gradient(145deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0) 42%);",
+			"}",
+			"/* Raised-card feedback is non-motion, so keep the stronger perimeter",
+			"   shadow available even when the OS asks to reduce motion. */",
+			"body[data-dsh-neu] [data-tool]:hover,",
+			"body[data-dsh-neu] [data-variant='think']:hover {",
+			"  box-shadow: var(--dsh-neu-card-raise-strong);",
 			"}",
 			"/* Micro-interactions: CSS-only, gated on reduced-motion (matching",
 			"   the official ReasoningRow shimmer gate). */",
@@ -247,21 +259,20 @@ window.__ModuleLoader__.load({
 			"  body[data-dsh-neu] [data-composer-card]:focus-within {",
 			"    box-shadow: var(--dsh-neu-inset-focus);",
 			"  }",
-			"  /* Tool rows (outer call and nested sub-calls alike): lift on",
-			"     hover (shadow only — no transform, so internal sticky/absolute",
-			"     geometry stays anchored). */",
+			"  /* Tool rows (outer call and nested sub-calls alike): deepen the shadow",
+			"     on hover without moving the card or changing document geometry. */",
 			"  body[data-dsh-neu] [data-tool] {",
-			"    transition: box-shadow 160ms ease;",
+			"    transition: box-shadow 320ms ease;",
 			"  }",
 			"  body[data-dsh-neu] [data-tool]:hover {",
-			"    box-shadow: var(--dsh-neu-raise);",
+			"    box-shadow: var(--dsh-neu-card-raise-strong);",
 			"  }",
 			"  /* Reasoning rows: hover reveals a slightly stronger raise. */",
 			"  body[data-dsh-neu] [data-variant='think'] {",
-			"    transition: box-shadow 160ms ease;",
+			"    transition: box-shadow 320ms ease;",
 			"  }",
 			"  body[data-dsh-neu] [data-variant='think']:hover {",
-			"    box-shadow: var(--dsh-neu-raise);",
+			"    box-shadow: var(--dsh-neu-card-raise-strong);",
 			"  }",
 			"  /* Code blocks: recess deepens on hover (copy button reachable",
 			"     by keyboard — hover is decorative only). */",
@@ -298,35 +309,21 @@ window.__ModuleLoader__.load({
 		};
 		//#endregion
 
-		//#region dsh-neu-theme: persistence
-		/** Read a localStorage string value (null on absence or error). */
-		function readStorage(key) {
-			try {
-				const value = window.localStorage.getItem(key);
-				return typeof value === "string" ? value : null;
-			} catch {
-				return null;
-			}
+		//#region dsh-neu-theme: settings boundary
+		/** Whether an id is a valid third-party skin or the built-in fallback. */
+		function isSkinPreference(id) {
+			return id === DEFAULT_SKIN || SKINS.some((skin) => skin.id === id);
 		}
 
-		/** Write (or remove with null) a localStorage value. */
-		function writeStorage(key, value) {
-			try {
-				if (value === null) window.localStorage.removeItem(key);
-				else window.localStorage.setItem(key, value);
-			} catch {
-				// storage unavailable / quota — the preference stays process-local
-			}
-		}
-
-		/** Saved skin id (may be unknown/absent). */
-		function readSavedSkin() {
-			return readStorage(STORAGE_KEY);
-		}
-
-		/** Persist a skin choice; DEFAULT_SKIN clears the stored value. */
-		function writeSavedSkin(id) {
-			writeStorage(STORAGE_KEY, id === DEFAULT_SKIN ? null : id);
+		/**
+		 * Narrow the Host settings section at the browser boundary. The Host
+		 * schema is authoritative; this guard only prevents an unusable value from
+		 * reaching ThemeRuntime when a stale or incompatible server responds.
+		 */
+		function decodeSkinSettings(section) {
+			if (typeof section !== "object" || section === null || Array.isArray(section)) return void 0;
+			const preference = section.preference;
+			return isSkinPreference(preference) ? { preference } : void 0;
 		}
 		//#endregion
 
@@ -571,19 +568,21 @@ window.__ModuleLoader__.load({
 
 		//#region dsh-neu-theme: client plugin body
 		/**
-		 * Required services: theme runtime (skins, switching), slots/locale
-		 * (the settings row). Persistence is localStorage, so no settings
-		 * transport is needed.
+		 * Required services: theme runtime (skins, switching), the settings scope
+		 * (Host-backed preference transport), and slots/locale (the settings row).
 		 */
 		const inject = [
 			"slots",
 			"locale",
-			"theme"
+			"theme",
+			"connection",
+			"remote",
+			"settingsScope"
 		];
 
 		/**
 		 * Client plugin body: register the Neumorphism flavors into the theme
-		 * runtime, restore the saved choice, keep the soft-UI shadow layer in
+		 * runtime, restore the Host-backed choice, keep the soft-UI shadow layer in
 		 * lockstep with the active preference, keep the row's store in sync
 		 * with theme/change, and register the picker into Settings → General.
 		 * @param ctx - client cordis context.
@@ -593,6 +592,33 @@ window.__ModuleLoader__.load({
 			ctx.effect(() => () => {
 				for (const dispose of disposers) dispose();
 			}, "dsh-neu-theme: theme registration");
+
+			// The Host settings document is the durable authority. Binding is
+			// intentionally non-blocking: the scope starts in a provisional state
+			// and adopts a validated section when its background read settles.
+			const skinSettings = ctx.settingsScope.bind({
+				namespace: SKIN_SETTINGS_NAMESPACE,
+				decode: decodeSkinSettings
+			});
+			const adoptSkinSettings = () => {
+				const saved = skinSettings.getSnapshot().value?.[SKIN_SETTINGS_FIELD];
+				if (!isSkinPreference(saved)) return;
+				const current = ctx.theme.getTheme().preference;
+				if (saved === DEFAULT_SKIN) {
+					// `system` means "no custom skin" here. Do not overwrite a
+					// user's built-in light/dark preference during initial adoption.
+					if (SKINS.some((skin) => skin.id === current)) {
+						ctx.theme.setTheme(DEFAULT_SKIN);
+					}
+					return;
+				}
+				if (current !== saved) ctx.theme.setTheme(saved);
+			};
+			ctx.effect(() => {
+				const dispose = skinSettings.subscribe(adoptSkinSettings);
+				adoptSkinSettings();
+				return dispose;
+			}, "dsh-neu-theme: settings preference adoption");
 
 			// Soft-UI shadow layer, mounted ONLY while a Neumorphism flavor is
 			// the active preference. Selecting Default (or any built-in
@@ -637,15 +663,8 @@ window.__ModuleLoader__.load({
 			ctx.on("theme/change", syncSkin);
 			ctx.on("theme/change", syncShadow);
 
-			// Restore the saved skin once (before any user interaction); the
-			// setTheme below emits theme/change, which drives both syncs. The
-			// explicit syncShadow(getTheme()) covers the no-change case where
-			// the persisted preference is already system (nothing to set).
-			const saved = readSavedSkin();
-			if (typeof saved === "string" && saved !== DEFAULT_SKIN && SKINS.some((skinDefinition) => skinDefinition.id === saved)) {
-				const current = ctx.theme.getTheme().preference;
-				if (current !== saved) ctx.theme.setTheme(saved);
-			}
+			// The explicit sync covers the no-change case where the Host has not
+			// returned a custom preference (or the browser is remote/memory mode).
 			syncShadow(ctx.theme.getTheme());
 
 			ctx.effect(() => ctx.locale.register(SETTINGS_NS, {
@@ -658,8 +677,13 @@ window.__ModuleLoader__.load({
 				syncSkin(ctx.theme.getTheme());
 				return {
 					setSkin: (id) => {
+						if (!isSkinPreference(id)) return;
 						ctx.theme.setTheme(id);
-						writeSavedSkin(id);
+						if (id === DEFAULT_SKIN) {
+							void skinSettings.unset(SKIN_SETTINGS_FIELD);
+						} else {
+							void skinSettings.set(SKIN_SETTINGS_FIELD, id);
+						}
 					}
 				};
 			};
