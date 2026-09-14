@@ -14,7 +14,15 @@ window.__ModuleLoader__.load({
 		var exports = module.exports;
 		Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
 		let react_jsx_runtime = require("react/jsx-runtime");
-		let _runtime_client = require("@deepseek-ai/dsh-client-runtime/client");
+		// `defineStore` is a platform seed, but dsh moved its provider from
+		// @deepseek-ai/dsh-client-runtime to @deepseek-ai/dsh-client-store in
+		// 0.1.2-alpha.2. Require whichever specifier the running shell seeds.
+		let _store;
+		try {
+			_store = require("@deepseek-ai/dsh-client-store");
+		} catch {
+			_store = require("@deepseek-ai/dsh-client-runtime/client");
+		}
 
 		//#region dsh-neu-theme: definitions
 		/** The settings row's locale namespace. */
@@ -334,7 +342,7 @@ window.__ModuleLoader__.load({
 		 * component reads via props.useStore.
 		 */
 		function createSkinStore() {
-			return (0, _runtime_client.defineStore)({
+			return (0, _store.defineStore)({
 				init: () => ({
 					skin: DEFAULT_SKIN,
 					revision: -1

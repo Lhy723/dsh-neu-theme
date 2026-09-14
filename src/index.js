@@ -6,7 +6,6 @@
  * seam so loopback Web clients persist it in the DSH user document instead of
  * partitioning it by browser origin.
  */
-import { settingsNamespace } from '@deepseek-ai/dsh-settings'
 import z from '@deepseek-ai/schemastery'
 
 /** Settings namespace shared by the Host and browser halves. */
@@ -26,9 +25,6 @@ export const SkinSettingsSchema = z.object({
 /** Host loader entry for the browser implementation exported from `./client`. */
 export function apply(ctx) {
 	ctx.inject(['settings'], (settingsCtx) => {
-		settingsCtx.settings.register(
-			settingsNamespace(SETTINGS_NAMESPACE),
-			SkinSettingsSchema,
-		)
+		settingsCtx.settings.register(SETTINGS_NAMESPACE, SkinSettingsSchema)
 	})
 }
