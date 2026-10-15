@@ -14,22 +14,15 @@ window.__ModuleLoader__.load({
 		var exports = module.exports;
 		Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
 		let react_jsx_runtime = require("react/jsx-runtime");
-		// `defineStore` is a platform seed, but dsh moved its provider from
-		// @deepseek-ai/dsh-client-runtime to @deepseek-ai/dsh-client-store in
-		// 0.1.2-alpha.2. Require whichever specifier the running shell seeds.
-		let _store;
-		try {
-			_store = require("@deepseek-ai/dsh-client-store");
-		} catch {
-			_store = require("@deepseek-ai/dsh-client-runtime/client");
-		}
+		// DSH 0.2 exposes defineStore from the client-store platform module.
+		let _store = require("@deepseek-ai/dsh-client-store");
 
 		//#region dsh-neu-theme: definitions
 		/** The settings row's locale namespace. */
 		const SETTINGS_NS = "settings.neu";
-		/** Host settings namespace holding the selected skin id. */
-		const SKIN_SETTINGS_NAMESPACE = "dsh-neu-theme";
-		/** Host settings field carrying the selected skin id. */
+		/** Profile entry id owning the selected skin preference. */
+		const SKIN_SETTINGS_ENTRY_ID = "dsh-neu-theme";
+		/** Profile Config field carrying the selected skin id. */
 		const SKIN_SETTINGS_FIELD = "preference";
 		/** Sentinel meaning "no custom theme — follow the built-in appearance". */
 		const DEFAULT_SKIN = "system";
@@ -323,16 +316,6 @@ window.__ModuleLoader__.load({
 			return id === DEFAULT_SKIN || SKINS.some((skin) => skin.id === id);
 		}
 
-		/**
-		 * Narrow the Host settings section at the browser boundary. The Host
-		 * schema is authoritative; this guard only prevents an unusable value from
-		 * reaching ThemeRuntime when a stale or incompatible server responds.
-		 */
-		function decodeSkinSettings(section) {
-			if (typeof section !== "object" || section === null || Array.isArray(section)) return void 0;
-			const preference = section.preference;
-			return isSkinPreference(preference) ? { preference } : void 0;
-		}
 		//#endregion
 
 		//#region dsh-neu-theme: settings row store
@@ -576,21 +559,20 @@ window.__ModuleLoader__.load({
 
 		//#region dsh-neu-theme: client plugin body
 		/**
-		 * Required services: theme runtime (skins, switching), the settings scope
-		 * (Host-backed preference transport), and slots/locale (the settings row).
+		 * Required services: theme runtime, ConfigForms and remote settings
+		 * transport, plus slots/locale for the settings row.
 		 */
 		const inject = [
 			"slots",
 			"locale",
 			"theme",
-			"connection",
 			"remote",
-			"settingsScope"
+			"configForms"
 		];
 
 		/**
 		 * Client plugin body: register the Neumorphism flavors into the theme
-		 * runtime, restore the Host-backed choice, keep the soft-UI shadow layer in
+		 * runtime, restore the profile Config choice, keep the soft-UI shadow layer in
 		 * lockstep with the active preference, keep the row's store in sync
 		 * with theme/change, and register the picker into Settings → General.
 		 * @param ctx - client cordis context.
@@ -601,13 +583,9 @@ window.__ModuleLoader__.load({
 				for (const dispose of disposers) dispose();
 			}, "dsh-neu-theme: theme registration");
 
-			// The Host settings document is the durable authority. Binding is
-			// intentionally non-blocking: the scope starts in a provisional state
-			// and adopts a validated section when its background read settles.
-			const skinSettings = ctx.settingsScope.bind({
-				namespace: SKIN_SETTINGS_NAMESPACE,
-				decode: decodeSkinSettings
-			});
+			// ConfigForms begins with a provisional snapshot and adopts the
+			// schema-validated profile value when the shared settings read settles.
+			const skinSettings = ctx.configForms.get(SKIN_SETTINGS_ENTRY_ID);
 			const adoptSkinSettings = () => {
 				const saved = skinSettings.getSnapshot().value?.[SKIN_SETTINGS_FIELD];
 				if (!isSkinPreference(saved)) return;
@@ -626,7 +604,7 @@ window.__ModuleLoader__.load({
 				const dispose = skinSettings.subscribe(adoptSkinSettings);
 				adoptSkinSettings();
 				return dispose;
-			}, "dsh-neu-theme: settings preference adoption");
+			}, "dsh-neu-theme: profile preference adoption");
 
 			// Soft-UI shadow layer, mounted ONLY while a Neumorphism flavor is
 			// the active preference. Selecting Default (or any built-in
@@ -713,3 +691,4 @@ window.__ModuleLoader__.load({
 		return module.exports;
 	}
 });
+
