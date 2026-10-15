@@ -7,7 +7,7 @@
 [![npm version](https://img.shields.io/npm/v/dsh-neu-theme?logo=npm)](https://www.npmjs.com/package/dsh-neu-theme)
 [![npm downloads](https://img.shields.io/npm/dm/dsh-neu-theme?logo=npm)](https://www.npmjs.com/package/dsh-neu-theme)
 
-A Neumorphism (soft-UI) theme plugin for **DeepSeek Harness web** — gentle
+A Neumorphism (soft-UI) theme plugin for **DeepSeek Harness Web and the embedded Desktop workspace** — gentle
 raised-and-recessed surfaces in a cream light palette and an ink-dark
 palette, complete with ambient lighting, material gloss, grain texture,
 glassmorphism and micro-interactions.
@@ -36,8 +36,7 @@ glassmorphism and micro-interactions.
   reasoning rows strengthen on hover; all gated under
   `@media (prefers-reduced-motion: no-preference)`.
 - **Settings row** — Settings → General gains a Neumorphism picker
-  (Default / Neu Light / Neu Dark), persisted through the Host settings
-  document.
+  (Default / Neu Light / Neu Dark), saved through the active profile's volatile plugin Config.
 - **Default is pristine** — selecting Default (or having no saved skin)
   leaves the document exactly as dsh ships it: no injected stylesheet, no
   body attribute, native colors and shadows.
@@ -58,35 +57,43 @@ glassmorphism and micro-interactions.
 
 ## Install
 
-Install the published package into a dsh profile (works with the `web`
-profile):
+Install the published package into the profile you use (`web` for DSH Web or
+`desktop` for DSH Desktop):
 
 ```sh
+# DSH Web
 dsh plugin --profile web add dsh-neu-theme
-# or install manually in the web profile:
+# DSH Desktop
+dsh plugin --profile desktop add dsh-neu-theme
+# Or install manually in the Web profile:
 cd ~/.dsh/profiles/web
 pnpm add dsh-neu-theme
 ```
 
 The package is also available on [npm](https://www.npmjs.com/package/dsh-neu-theme).
 
-Then add `"dsh-neu-theme"` to `dsh.profile.bundles` in the profile's
-`package.json`, and restart `dsh web`.
+Then add `"dsh-neu-theme"` to `dsh.profile.bundles` in the selected profile's
+`package.json`, and restart that profile (`dsh web` or DSH Desktop).
 
 Once running: **Settings → General → Neumorphism theme** → pick
-**Default / Neu Light / Neu Dark**. The choice is stored in the Host settings
-namespace `dsh-neu-theme` (normally `~/.dsh/settings.yaml`); choose **Default**
-to return to the built-in appearance.
+**Default / Neu Light / Neu Dark**. The selected value is a volatile plugin
+Config field. DSH saves it in the active profile's Cordis patch; the Web and
+Desktop profiles keep independent choices.
+Choose **Default** to return to the built-in appearance. DSH 0.2 imports legacy
+`settings.yaml` sections into a profile entry with the same id, so the
+`dsh-neu-theme` entry id also preserves the former settings key during import.
 
-The Host-backed settings path requires DSH Web Host `0.1.1-rc.2` or newer.
-Remote browsers cannot access the loopback settings API, so their selection
-remains process-local by design.
+## Platform compatibility
+
+`dsh-neu-theme` is a Web client plugin (`dsh.client.platform: "web"`). DSH Desktop embeds the complete DSH Web application in its main window, so the theme applies to that UI through the Web client plugin loader. Desktop has a separate `desktop` profile; install the plugin there when using Desktop. This package styles the embedded workspace and does not add native menu, tray, or window-shell UI. This release requires DSH `^0.2.0-rc.2`. DSH 0.2 replaced the old
+`settings.register()` / `settingsScope` APIs with plugin `Config` and
+`configForms`; DSH 0.1 runtimes are not supported by this release.
 
 ## Develop
 
 ```sh
 npm run build   # regenerates lib/client.js from src/client.tpl.js + themes/*.json
-npm run check   # syntax-checks the built bundles
+npm run check   # syntax and DSH 0.2 compatibility-contract checks
 ```
 
 While `dsh web` runs with the HMR chain mounted, rebuilding
@@ -98,10 +105,10 @@ this plugin's fiber.
 ```
 dsh-neu-theme/
 ├── package.json          # dsh.bundle.patch + dsh.client manifest
-├── cordis.patch.yml      # loader entry insert (id: neu-theme)
+├── cordis.patch.yml      # loader entry insert (id: dsh-neu-theme)
 ├── themes/               # neu-light.json / neu-dark.json — the palettes
 ├── src/
-│   ├── index.js          # host half (no-op loader entry)
+│   ├── index.js          # Host Config schema and profile settings policy
 │   └── client.tpl.js     # browser half template (build injects themes)
 ├── scripts/build.mjs     # zero-dependency build
 └── lib/                  # generated artifacts (gitignored)
@@ -110,3 +117,4 @@ dsh-neu-theme/
 ## License
 
 MIT
+
