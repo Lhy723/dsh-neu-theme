@@ -27,7 +27,9 @@ English version: [README.md](README.md)。
 - **微交互动画** — 对话节点挂载淡入、气泡 hover 上浮、输入区聚焦凹陷加深、
   工具行与思考行 hover 增强;全部受 `prefers-reduced-motion` 保护
 - **设置入口** — 设置 → 通用 → Neumorphism theme(Default / Neu Light / Neu Dark),
-  选择通过当前 profile 的 volatile 插件 Config 保存
+  选择通过当前 profile 的 volatile 插件 Config 保存;DSH 0.2 只持久化内置的
+  light/dark/system 偏好,因此插件把所选调色板作为 token 覆盖层叠加到匹配的
+  内置基础调色板上
 - **默认即原生** — 选 Default(或从未选择)时,页面与 dsh 原生完全一致:
   不注入样式、不打 body 标记、原生颜色与阴影
 
@@ -74,7 +76,8 @@ pnpm add file:/path/to/dsh-neu-theme
 使用:**设置 → 通用 → Neumorphism theme** 选择 **Default / Neu Light / Neu Dark**。
 选择是一个 volatile 插件 Config 字段，DSH 会将它保存到当前 profile 的
 Cordis patch 中；Web 与 Desktop profile 分别保存自己的选择。选择
-**Default** 即回到内置外观。DSH 0.2 会把旧 `settings.yaml` 分区导入到 id 相同的 profile entry；
+**Default** 即回到内置外观。若在同一面板中选择内置外观（浅色、深色或跟随系统），
+插件会清除已保存的皮肤并保留该内置模式。DSH 0.2 会把旧 `settings.yaml` 分区导入到 id 相同的 profile entry；
 entry id `dsh-neu-theme` 因此保留了旧设置键的导入路径。
 
 ## 平台兼容性

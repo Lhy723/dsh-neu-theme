@@ -24,15 +24,20 @@ window.__ModuleLoader__.load({
 		const SKIN_SETTINGS_ENTRY_ID = "dsh-neu-theme";
 		/** Profile Config field carrying the selected skin id. */
 		const SKIN_SETTINGS_FIELD = "preference";
+		/** Entry id of the built-in theme service's settings form. */
+		const BASE_THEME_ENTRY_ID = "ui-theme";
+		/** Source identity of this plugin's token-override layer. */
+		const SKIN_OVERRIDE_SOURCE = "dsh-neu-theme";
 		/** Sentinel meaning "no custom theme — follow the built-in appearance". */
 		const DEFAULT_SKIN = "system";
 
 		/**
-		 * The Neumorphism theme catalog. Each entry is a third-party theme for
-		 * the built-in ThemeRuntime: an id, the base palette it builds on
-		 * (colorScheme drives body[data-ds-dark-theme]), and --dsw-alias-*
-		 * overrides applied as inline custom properties on <body> by
-		 * ui-layout's ThemePresenter. Values are concrete CSS colors (no var()
+		 * The Neumorphism theme catalog. `colorScheme` names the built-in base
+		 * palette each skin builds on, and `tokens` carries the --dsw-alias-*
+		 * overrides. DSH 0.2 persists only the built-in light/dark/system
+		 * preference, so the plugin applies these tokens as one override layer
+		 * over that base instead of registering a theme id the host cannot
+		 * remember across reloads. Values are concrete CSS colors (no var()
 		 * indirection) so every alias resolves on its own.
 		 */
 		const SKINS = __THEMES_JSON__;
@@ -159,11 +164,11 @@ window.__ModuleLoader__.load({
 			"body[data-dsh-neu][data-ds-dark-theme] div[data-phase] {",
 			"  background-image: url(\"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27160%27 height=%27160%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.8%27 numOctaves=%272%27 stitchTiles=%27stitch%27/%3E%3CfeColorMatrix type=%27saturate%27 values=%270%27/%3E%3C/filter%3E%3Crect width=%27160%27 height=%27160%27 filter=%27url(%23n)%27 opacity=%270.1%27/%3E%3C/svg%3E\");",
 			"}",
-			"/* Details panel keeps the same grain. */",
-			"body[data-dsh-neu] [class*='detailsCol'] {",
+			"/* Right sidebar panel keeps the same grain (ui-layout rightbarCol). */",
+			"body[data-dsh-neu] [class*='rightbarCol'] {",
 			"  background-image: url(\"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27160%27 height=%27160%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.8%27 numOctaves=%272%27 stitchTiles=%27stitch%27/%3E%3CfeColorMatrix type=%27saturate%27 values=%270%27/%3E%3C/filter%3E%3Crect width=%27160%27 height=%27160%27 filter=%27url(%23n)%27 opacity=%270.08%27/%3E%3C/svg%3E\");",
 			"}",
-			"body[data-dsh-neu][data-ds-dark-theme] [class*='detailsCol'] {",
+			"body[data-dsh-neu][data-ds-dark-theme] [class*='rightbarCol'] {",
 			"  background-image: url(\"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27160%27 height=%27160%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.8%27 numOctaves=%272%27 stitchTiles=%27stitch%27/%3E%3CfeColorMatrix type=%27saturate%27 values=%270%27/%3E%3C/filter%3E%3Crect width=%27160%27 height=%27160%27 filter=%27url(%23n)%27 opacity=%270.1%27/%3E%3C/svg%3E\");",
 			"}",
 			"/* User and consumed-steering bubbles: barely-raised chips with a",
@@ -320,21 +325,15 @@ window.__ModuleLoader__.load({
 
 		//#region dsh-neu-theme: settings row store
 		/**
-		 * Skin row slot store: a mirror of the theme service snapshot. The
-		 * plugin's apply-world change listener is the only writer; the row
-		 * component reads via props.useStore.
+		 * Skin row slot store: the selected catalog id. The plugin's apply
+		 * world is the only writer; the row component reads via props.useStore.
 		 */
 		function createSkinStore() {
 			return (0, _store.defineStore)({
-				init: () => ({
-					skin: DEFAULT_SKIN,
-					revision: -1
-				}),
+				init: () => ({ skin: DEFAULT_SKIN }),
 				actions: {
-					sync: (d, skin, revision) => {
-						if (revision <= d.revision) return;
+					sync: (d, skin) => {
 						d.skin = skin;
-						d.revision = revision;
 					}
 				}
 			});
@@ -571,46 +570,24 @@ window.__ModuleLoader__.load({
 		];
 
 		/**
-		 * Client plugin body: register the Neumorphism flavors into the theme
-		 * runtime, restore the profile Config choice, keep the soft-UI shadow layer in
-		 * lockstep with the active preference, keep the row's store in sync
-		 * with theme/change, and register the picker into Settings → General.
+		 * Client plugin body: restore the profile Config choice as a token
+		 * layer over the matching built-in palette, keep the soft-UI shadow
+		 * layer in lockstep with the selection, and register the picker into
+		 * Settings → General.
 		 * @param ctx - client cordis context.
 		 */
 		function apply(ctx) {
-			const disposers = SKINS.map((skinDefinition) => ctx.theme.register(skinDefinition));
-			ctx.effect(() => () => {
-				for (const dispose of disposers) dispose();
-			}, "dsh-neu-theme: theme registration");
-
-			// ConfigForms begins with a provisional snapshot and adopts the
-			// schema-validated profile value when the shared settings read settles.
+			// DSH 0.2 persists only the built-in light/dark/system preference, and
+			// ui-theme re-adopts that section whenever it refreshes. A third-party
+			// theme id therefore cannot stay selected across those refreshes; the
+			// skin lives in this entry's Config and is applied as one token-override
+			// layer over the matching built-in base palette.
 			const skinSettings = ctx.configForms.get(SKIN_SETTINGS_ENTRY_ID);
-			const adoptSkinSettings = () => {
-				const saved = skinSettings.getSnapshot().value?.[SKIN_SETTINGS_FIELD];
-				if (!isSkinPreference(saved)) return;
-				const current = ctx.theme.getTheme().preference;
-				if (saved === DEFAULT_SKIN) {
-					// `system` means "no custom skin" here. Do not overwrite a
-					// user's built-in light/dark preference during initial adoption.
-					if (SKINS.some((skin) => skin.id === current)) {
-						ctx.theme.setTheme(DEFAULT_SKIN);
-					}
-					return;
-				}
-				if (current !== saved) ctx.theme.setTheme(saved);
-			};
-			ctx.effect(() => {
-				const dispose = skinSettings.subscribe(adoptSkinSettings);
-				adoptSkinSettings();
-				return dispose;
-			}, "dsh-neu-theme: profile preference adoption");
+			const baseSettings = ctx.configForms.get(BASE_THEME_ENTRY_ID);
 
 			// Soft-UI shadow layer, mounted ONLY while a Neumorphism flavor is
-			// the active preference. Selecting Default (or any built-in
-			// appearance) must leave the document exactly as dsh ships it —
-			// colors are handled by the ThemeRuntime, the shadow layer and the
-			// body attribute belong to the plugin and follow the same switch.
+			// selected. Selecting Default (or any built-in appearance) must leave
+			// the document exactly as dsh ships it.
 			let styleNode = null;
 			const ensureShadow = () => {
 				if (styleNode !== null) return;
@@ -626,52 +603,191 @@ window.__ModuleLoader__.load({
 					styleNode = null;
 				}
 			};
-			const syncShadow = (snapshot) => {
-				const neumorphic = SKINS.some((skinDefinition) => skinDefinition.id === snapshot.preference);
-				if (neumorphic) {
-					ensureShadow();
-					document.body.dataset.dshNeu = "";
-				} else {
-					removeShadow();
-					delete document.body.dataset.dshNeu;
-				}
-			};
-			ctx.effect(() => () => {
-				removeShadow();
-				delete document.body.dataset.dshNeu;
-			}, "dsh-neu-theme: soft-ui shadow layer");
 
 			const skinStore = createSkinStore();
 			let skinBound;
-			const syncSkin = (snapshot) => {
-				skinBound?.sync(snapshot.preference, snapshot.revision);
-			};
-			ctx.on("theme/change", syncSkin);
-			ctx.on("theme/change", syncShadow);
+			let selected = DEFAULT_SKIN;
+			let overrideDispose = null;
+			let appliedBase = null;
+			let restored = false;
+			let applying = false;
+			let pendingSelection = null;
 
-			// The explicit sync covers the no-change case where the Host has not
-			// returned a custom preference (or the browser is remote/memory mode).
-			syncShadow(ctx.theme.getTheme());
+			const publish = () => skinBound?.sync(selected);
+
+			const reportWriteFailure = (error) => {
+				ctx.logger?.warn("dsh-neu-theme: could not persist the skin preference", error);
+			};
+
+			const readStoredSkin = () => {
+				const saved = skinSettings.getSnapshot().value?.[SKIN_SETTINGS_FIELD];
+				return isSkinPreference(saved) ? saved : DEFAULT_SKIN;
+			};
+
+			// A local write owns the selection until the accepted section shows the
+			// same value (or the write fails). Releasing it earlier would let a stale
+			// snapshot undo the click and then re-apply it.
+			const finishSelectionWrite = (failed) => {
+				if (failed || readStoredSkin() === pendingSelection) pendingSelection = null;
+				if (pendingSelection === null) adoptSkinSettings();
+			};
+
+			const removeOverride = () => {
+				if (overrideDispose === null) return;
+				const dispose = overrideDispose;
+				overrideDispose = null;
+				// A theme/change listener can dispose this layer while the runtime is
+				// already notifying that event; re-emitting inside the dispatch can
+				// leave the presenter holding the stale token list. Remove the layer
+				// after the current notification turn instead.
+				queueMicrotask(dispose);
+			};
+
+			const applySkin = (id) => {
+				const skin = SKINS.find((candidate) => candidate.id === id);
+				if (skin === undefined) return;
+				selected = id;
+				appliedBase = skin.colorScheme;
+				// overrideTokens and setTheme publish theme/change synchronously.
+				// Keep the opt-out listener from mistaking our own writes for a
+				// built-in choice made elsewhere.
+				applying = true;
+				try {
+					removeOverride();
+					const tokens = {};
+					for (const [name, value] of Object.entries(skin.tokens)) {
+						// One value per palette: repeat the skin's concrete color so the
+						// override stays legible whichever base scheme is active.
+						tokens[name] = { light: value, dark: value };
+					}
+					overrideDispose = ctx.theme.overrideTokens(SKIN_OVERRIDE_SOURCE, tokens);
+					// Switch the built-in base palette so every token this catalog does
+					// not override still matches the skin's light/dark semantics.
+					ctx.theme.setTheme(skin.colorScheme);
+				} finally {
+					applying = false;
+				}
+				ensureShadow();
+				document.body.dataset.dshNeu = "";
+				publish();
+			};
+
+			const clearSkin = (restoreSystem) => {
+				selected = DEFAULT_SKIN;
+				appliedBase = null;
+				removeOverride();
+				removeShadow();
+				delete document.body.dataset.dshNeu;
+				if (restoreSystem) ctx.theme.setTheme(DEFAULT_SKIN);
+				publish();
+			};
+
+			// ui-theme adopts its durable preference asynchronously. Wait until its
+			// accepted section and the runtime agree before restoring the skin, so
+			// that the first adoption cannot immediately overwrite it.
+			const baseSettled = () => {
+				const snapshot = baseSettings.getSnapshot();
+				const value = snapshot.value;
+				if (snapshot.status !== "ready" || value === null || typeof value !== "object") return false;
+				return typeof value.preference === "string" && ctx.theme.getTheme().preference === value.preference;
+			};
+
+			const restoreSkin = () => {
+				if (restored || pendingSelection !== null || !baseSettled()) return;
+				restored = true;
+				const saved = readStoredSkin();
+				if (saved !== DEFAULT_SKIN) applySkin(saved);
+			};
+
+			const adoptSkinSettings = () => {
+				if (pendingSelection !== null) {
+					if (readStoredSkin() !== pendingSelection) return;
+					pendingSelection = null;
+				}
+				if (!restored) {
+					restoreSkin();
+					return;
+				}
+				const saved = readStoredSkin();
+				if (saved === DEFAULT_SKIN) {
+					// Another client cleared the skin. Drop the local layer but leave
+					// the base palette to the ui-theme preference that client chose.
+					if (selected !== DEFAULT_SKIN) clearSkin(false);
+					return;
+				}
+				if (saved !== selected) applySkin(saved);
+			};
+
+			const onThemeChange = (snapshot) => {
+				if (applying) return;
+				if (!restored) {
+					restoreSkin();
+					return;
+				}
+				if (selected === DEFAULT_SKIN) return;
+				// Our own base-palette switch (or ui-theme adopting the value we
+				// wrote) keeps the skin. Any other preference is a built-in choice
+				// made elsewhere — the Appearance row or another browser — so drop
+				// the skin instead of forcing it back on the next launch.
+				if (snapshot.preference === appliedBase) return;
+				clearSkin(false);
+				pendingSelection = DEFAULT_SKIN;
+				void skinSettings.unset(SKIN_SETTINGS_FIELD).then(
+					() => finishSelectionWrite(false),
+					(error) => {
+						reportWriteFailure(error);
+						finishSelectionWrite(true);
+					});
+			};
+
+			ctx.effect(() => {
+				const offSkinSettings = skinSettings.subscribe(adoptSkinSettings);
+				const offBaseSettings = baseSettings.subscribe(restoreSkin);
+				const offTheme = ctx.on("theme/change", onThemeChange);
+				return () => {
+					offSkinSettings();
+					offBaseSettings();
+					offTheme();
+				};
+			}, "dsh-neu-theme: profile preference adoption");
+
+			ctx.effect(() => () => {
+				clearSkin(false);
+			}, "dsh-neu-theme: soft-ui shadow layer");
+
+			// Cover values that settled before these subscriptions existed.
+			restoreSkin();
+			adoptSkinSettings();
 
 			ctx.effect(() => ctx.locale.register(SETTINGS_NS, {
 				zh,
 				en
 			}), "dsh-neu-theme: settings row dictionaries");
 
+			const requestSkin = (id) => {
+				if (!isSkinPreference(id)) return;
+				pendingSelection = id;
+				if (id === DEFAULT_SKIN) {
+					// `system` means "no custom skin"; ui-theme owns the base.
+					clearSkin(true);
+				} else {
+					applySkin(id);
+				}
+				const write = id === DEFAULT_SKIN
+					? skinSettings.unset(SKIN_SETTINGS_FIELD)
+					: skinSettings.set(SKIN_SETTINGS_FIELD, id);
+				void write.then(
+					() => finishSelectionWrite(false),
+					(error) => {
+						reportWriteFailure(error);
+						finishSelectionWrite(true);
+					});
+			};
+
 			const skinInjected = (actions) => {
 				skinBound = actions;
-				syncSkin(ctx.theme.getTheme());
-				return {
-					setSkin: (id) => {
-						if (!isSkinPreference(id)) return;
-						ctx.theme.setTheme(id);
-						if (id === DEFAULT_SKIN) {
-							void skinSettings.unset(SKIN_SETTINGS_FIELD);
-						} else {
-							void skinSettings.set(SKIN_SETTINGS_FIELD, id);
-						}
-					}
-				};
+				skinBound.sync(selected);
+				return { setSkin: requestSkin };
 			};
 			ctx.slots.inject("settings.general.item", () => ctx.slots.register({
 				name: "settings.general.item",

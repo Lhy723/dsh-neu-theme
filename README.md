@@ -37,6 +37,9 @@ glassmorphism and micro-interactions.
   `@media (prefers-reduced-motion: no-preference)`.
 - **Settings row** — Settings → General gains a Neumorphism picker
   (Default / Neu Light / Neu Dark), saved through the active profile's volatile plugin Config.
+  DSH 0.2 only persists the built-in light/dark/system preference, so the
+  plugin applies the chosen palette as a token-override layer over the
+  matching built-in base palette.
 - **Default is pristine** — selecting Default (or having no saved skin)
   leaves the document exactly as dsh ships it: no injected stylesheet, no
   body attribute, native colors and shadows.
@@ -79,7 +82,9 @@ Once running: **Settings → General → Neumorphism theme** → pick
 **Default / Neu Light / Neu Dark**. The selected value is a volatile plugin
 Config field. DSH saves it in the active profile's Cordis patch; the Web and
 Desktop profiles keep independent choices.
-Choose **Default** to return to the built-in appearance. DSH 0.2 imports legacy
+Choose **Default** to return to the built-in appearance. Choosing a built-in
+Appearance mode (Light, Dark, or System) in the same panel also clears the saved
+skin and keeps that built-in mode. DSH 0.2 imports legacy
 `settings.yaml` sections into a profile entry with the same id, so the
 `dsh-neu-theme` entry id also preserves the former settings key during import.
 

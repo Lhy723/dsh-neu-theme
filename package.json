@@ -63,7 +63,7 @@
     "@deepseek-ai/dsh-client-store": "^0.2.0-rc.2"
   },
   "dependencies": {
-    "@deepseek-ai/schemastery": "^3.18.1"
+    "@deepseek-ai/schemastery": "^3.18.5"
   },
   "scripts": {
     "build": "node scripts/build.mjs",

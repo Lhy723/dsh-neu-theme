@@ -30,10 +30,31 @@ assert.match(host, /settings\.configure\(\{ auto: false \}, ctx\.fiber\)/,
   'the custom settings row must disable automatic form generation')
 assert.doesNotMatch(host, /settings\.register\(/,
   'the removed DSH 0.1 Host settings API must not remain in the Host entry')
-assert.match(client, /ctx\.configForms\.get\(SKIN_SETTINGS_ENTRY_ID\)/)
+const schemastery = manifest.dependencies?.['@deepseek-ai/schemastery'] ?? ''
+const schemasteryParts = schemastery.replace(/^[~^]/, '').split('.').map(Number)
+assert.ok(
+  schemasteryParts[0] > 3
+    || schemasteryParts[0] === 3 && (schemasteryParts[1] > 18 || schemasteryParts[1] === 18 && schemasteryParts[2] >= 5),
+  'Config.volatile() requires schemastery >= 3.18.5')
+assert.match(client, /BASE_THEME_ENTRY_ID = "ui-theme"/)
+assert.match(client, /SKIN_OVERRIDE_SOURCE = "dsh-neu-theme"/)
+assert.match(client, /ctx\.theme\.overrideTokens\(SKIN_OVERRIDE_SOURCE, tokens\)/,
+  'the skin must be applied as a token-override layer over the built-in palette')
+assert.match(client, /tokens\[name\] = \{ light: value, dark: value \}/,
+  'every override carries both palette modes')
+assert.match(client, /ctx\.theme\.setTheme\(skin\.colorScheme\)/,
+  'the built-in base palette must follow the skin color scheme')
+assert.match(client, /queueMicrotask\(dispose\)/,
+  'override removal must not re-enter the theme/change dispatch')
+assert.match(client, /baseSettings\.subscribe\(restoreSkin\)/,
+  'restoration must wait for the built-in theme settings form')
+assert.match(client, /snapshot\.status !== "ready"/,
+  'restoration must not race ui-theme initial adoption')
 assert.match(client, /skinSettings\.subscribe\(adoptSkinSettings\)/)
 assert.match(client, /skinSettings\.set\(SKIN_SETTINGS_FIELD, id\)/)
 assert.match(client, /skinSettings\.unset\(SKIN_SETTINGS_FIELD\)/)
+assert.doesNotMatch(client, /ctx\.theme\.register\(/,
+  'DSH 0.2 cannot persist a third-party theme id, so the plugin must not register and select one')
 assert.doesNotMatch(client, /settingsScope|dsh-client-runtime/,
   'the removed DSH 0.1 settings API must not remain in the browser bundle source')
 assert.match(patch, /id: dsh-neu-theme/)
