@@ -165,6 +165,12 @@ window.__ModuleLoader__.load({
 			"     texture instead. */",
 			"  background-image: none;",
 			"}",
+			"body[data-dsh-neu][data-ds-dark-theme] [class*='composerSeat'] {",
+			"  /* The native seat gradient fades to an opaque base color over the",
+			"     canvas grain, so the footer reads as a flat black band. Let the",
+			"     conversation surface continue behind the capsule instead. */",
+			"  background-image: none;",
+			"}",
 
 			"/* Keep the conversation canvas uniform. A large radial spotlight here",
 			"   creates a visible oval boundary over messages on wide/high-DPI windows;",
