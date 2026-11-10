@@ -349,7 +349,7 @@ window.__ModuleLoader__.load({
 			"  body[data-dsh-neu] [data-composer-card] {",
 			"    transition: box-shadow 160ms ease;",
 			"  }",
-			"  body[data-dsh-neu] [data-composer-card]:hover {",
+			"  body[data-dsh-neu] [data-composer-card]:hover:not(:focus-within) {",
 			"    box-shadow: var(--dsh-neu-inset-focus);",
 			"  }",
 			"  /* Tool rows (outer call and nested sub-calls alike): deepen the shadow",
