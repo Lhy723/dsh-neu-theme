@@ -14,32 +14,30 @@ window.__ModuleLoader__.load({
 		var exports = module.exports;
 		Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
 		let react_jsx_runtime = require("react/jsx-runtime");
-		// `defineStore` is a platform seed, but dsh moved its provider from
-		// @deepseek-ai/dsh-client-runtime to @deepseek-ai/dsh-client-store in
-		// 0.1.2-alpha.2. Require whichever specifier the running shell seeds.
-		let _store;
-		try {
-			_store = require("@deepseek-ai/dsh-client-store");
-		} catch {
-			_store = require("@deepseek-ai/dsh-client-runtime/client");
-		}
+		// DSH 0.2 exposes defineStore from the client-store platform module.
+		let _store = require("@deepseek-ai/dsh-client-store");
 
 		//#region dsh-neu-theme: definitions
 		/** The settings row's locale namespace. */
 		const SETTINGS_NS = "settings.neu";
-		/** Host settings namespace holding the selected skin id. */
-		const SKIN_SETTINGS_NAMESPACE = "dsh-neu-theme";
-		/** Host settings field carrying the selected skin id. */
+		/** Profile entry id owning the selected skin preference. */
+		const SKIN_SETTINGS_ENTRY_ID = "dsh-neu-theme";
+		/** Profile Config field carrying the selected skin id. */
 		const SKIN_SETTINGS_FIELD = "preference";
+		/** Entry id of the built-in theme service's settings form. */
+		const BASE_THEME_ENTRY_ID = "ui-theme";
+		/** Source identity of this plugin's token-override layer. */
+		const SKIN_OVERRIDE_SOURCE = "dsh-neu-theme";
 		/** Sentinel meaning "no custom theme — follow the built-in appearance". */
 		const DEFAULT_SKIN = "system";
 
 		/**
-		 * The Neumorphism theme catalog. Each entry is a third-party theme for
-		 * the built-in ThemeRuntime: an id, the base palette it builds on
-		 * (colorScheme drives body[data-ds-dark-theme]), and --dsw-alias-*
-		 * overrides applied as inline custom properties on <body> by
-		 * ui-layout's ThemePresenter. Values are concrete CSS colors (no var()
+		 * The Neumorphism theme catalog. `colorScheme` names the built-in base
+		 * palette each skin builds on, and `tokens` carries the --dsw-alias-*
+		 * overrides. DSH 0.2 persists only the built-in light/dark/system
+		 * preference, so the plugin applies these tokens as one override layer
+		 * over that base instead of registering a theme id the host cannot
+		 * remember across reloads. Values are concrete CSS colors (no var()
 		 * indirection) so every alias resolves on its own.
 		 */
 		const SKINS = __THEMES_JSON__;
@@ -75,18 +73,25 @@ window.__ModuleLoader__.load({
 						"  --dsh-neu-card-raise-strong: inset 0 1px 0 rgba(255, 255, 255, 0.85), 0 0 0 1px rgba(122, 118, 108, 0.08), 0 0 14px 1px rgba(122, 118, 108, 0.18), -6px -6px 14px rgba(255, 255, 255, 0.82);",
 			"  --dsh-neu-inset: inset 3px 3px 8px rgba(122, 118, 108, 0.16), inset -3px -3px 8px rgba(255, 255, 255, 0.3);",
 			"  --dsh-neu-inset-focus: inset 4px 4px 10px rgba(122, 118, 108, 0.22), inset -4px -4px 10px rgba(255, 255, 255, 0.4);",
+			"  --dsh-neu-focus-ring: rgba(113, 128, 213, 0.24);",
+			"  --dsh-neu-accent-glow: rgba(113, 128, 213, 0.22);",
 			"  /* Keep the shell lighting uniform. Broad radial layers form a visible",
 			"     oval on high-DPI windows, so the theme uses only a restrained grain",
 			"     texture over the token background. */",
 			"  background-image: url(\"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27160%27 height=%27160%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.8%27 numOctaves=%272%27 stitchTiles=%27stitch%27/%3E%3CfeColorMatrix type=%27saturate%27 values=%270%27/%3E%3C/filter%3E%3Crect width=%27160%27 height=%27160%27 filter=%27url(%23n)%27 opacity=%270.08%27/%3E%3C/svg%3E\");",
 			"}",
 			"body[data-dsh-neu][data-ds-dark-theme] {",
-						"  --dsh-neu-raise: inset 0 1px 0 rgba(255, 255, 255, 0.13), 0 1px 2px rgba(0, 0, 0, 0.4), 6px 6px 14px rgba(0, 0, 0, 0.45), -6px -6px 14px rgba(255, 255, 255, 0.05);",
-						"  --dsh-neu-raise-sm: inset 0 1px 0 rgba(255, 255, 255, 0.11), 0 1px 2px rgba(0, 0, 0, 0.32), 3px 3px 8px rgba(0, 0, 0, 0.4), -3px -3px 8px rgba(255, 255, 255, 0.04);",
-						"  --dsh-neu-card-raise: inset 0 1px 0 rgba(255, 255, 255, 0.11), 0 0 0 1px rgba(0, 0, 0, 0.2), 0 0 8px 1px rgba(0, 0, 0, 0.32), -3px -3px 8px rgba(255, 255, 255, 0.04);",
-						"  --dsh-neu-card-raise-strong: inset 0 1px 0 rgba(255, 255, 255, 0.13), 0 0 0 1px rgba(0, 0, 0, 0.24), 0 0 14px 1px rgba(0, 0, 0, 0.38), -6px -6px 14px rgba(255, 255, 255, 0.05);",
-			"  --dsh-neu-inset: inset 3px 3px 8px rgba(0, 0, 0, 0.5), inset -3px -3px 8px rgba(255, 255, 255, 0.06);",
-			"  --dsh-neu-inset-focus: inset 4px 4px 10px rgba(0, 0, 0, 0.6), inset -4px -4px 10px rgba(255, 255, 255, 0.08);",
+						"  /* Dark neumorphism needs far less light than the cream palette. Keep one",
+						"     top highlight and a compact directional shadow; broad white glows",
+						"     and 1px perimeter rings read as glowing rectangles on dark surfaces. */",
+						"  --dsh-neu-raise: inset 0 1px 0 rgba(255, 255, 255, 0.07), inset 0 -1px 0 rgba(0, 0, 0, 0.22), 0 1px 2px rgba(0, 0, 0, 0.28), 5px 5px 12px rgba(0, 0, 0, 0.32), -2px -2px 6px rgba(255, 255, 255, 0.02);",
+						"  --dsh-neu-raise-sm: inset 0 1px 0 rgba(255, 255, 255, 0.065), inset 0 -1px 0 rgba(0, 0, 0, 0.18), 0 1px 2px rgba(0, 0, 0, 0.22), 3px 3px 8px rgba(0, 0, 0, 0.26);",
+						"  --dsh-neu-card-raise: inset 0 1px 0 rgba(255, 255, 255, 0.065), inset 0 -1px 0 rgba(0, 0, 0, 0.18), 0 2px 6px rgba(0, 0, 0, 0.22);",
+						"  --dsh-neu-card-raise-strong: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.2), 0 2px 10px rgba(0, 0, 0, 0.28), -2px -2px 6px rgba(255, 255, 255, 0.018);",
+			"  --dsh-neu-inset: inset 2px 2px 6px rgba(0, 0, 0, 0.34), inset -2px -2px 6px rgba(255, 255, 255, 0.035);",
+			"  --dsh-neu-inset-focus: inset 3px 3px 8px rgba(0, 0, 0, 0.42), inset -3px -3px 8px rgba(255, 255, 255, 0.05);",
+			"  --dsh-neu-focus-ring: rgba(139, 153, 232, 0.26);",
+			"  --dsh-neu-accent-glow: rgba(139, 153, 232, 0.28);",
 			"  background-image: url(\"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27160%27 height=%27160%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.8%27 numOctaves=%272%27 stitchTiles=%27stitch%27/%3E%3CfeColorMatrix type=%27saturate%27 values=%270%27/%3E%3C/filter%3E%3Crect width=%27160%27 height=%27160%27 filter=%27url(%23n)%27 opacity=%270.1%27/%3E%3C/svg%3E\");",
 			"}",
 			"/* Sidebar column: a soft raised card over the canvas (AppFrame's",
@@ -102,12 +107,46 @@ window.__ModuleLoader__.load({
 			"}",
 			"body[data-dsh-neu][data-ds-dark-theme] [class*='sidebarCol'] {",
 			"  background-image:",
-						"    linear-gradient(145deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0) 32%),",
+						"    linear-gradient(145deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0) 32%),",
 			"    url(\"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27160%27 height=%27160%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.8%27 numOctaves=%272%27 stitchTiles=%27stitch%27/%3E%3CfeColorMatrix type=%27saturate%27 values=%270%27/%3E%3C/filter%3E%3Crect width=%27160%27 height=%27160%27 filter=%27url(%23n)%27 opacity=%270.1%27/%3E%3C/svg%3E\");",
-			"  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14),",
-			"              0 2px 6px rgba(0, 0, 0, 0.45),",
-			"              10px 10px 24px rgba(0, 0, 0, 0.5),",
-			"              -8px -8px 20px rgba(255, 255, 255, 0.06);",
+			"  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1),",
+			"              0 2px 6px rgba(0, 0, 0, 0.32),",
+			"              10px 10px 24px rgba(0, 0, 0, 0.38),",
+			"              -6px -6px 16px rgba(255, 255, 255, 0.03);",
+			"}",
+			"/* Tactile navigation: rows lift on hover, and the selected session",
+			"   presses into the sidebar with a thin brand rail. */",
+			"body[data-dsh-neu] button[class*='panelRow'],",
+			"body[data-dsh-neu] [role='treeitem'][class*='sessionRow'],",
+			"body[data-dsh-neu] [role='treeitem'][class*='projectRow'] {",
+			"  border-radius: 12px;",
+			"  transition: box-shadow 160ms ease, background-color 160ms ease;",
+			"}",
+			"@media (hover: hover) {",
+			"  body[data-dsh-neu] button[class*='panelRow']:hover,",
+			"  body[data-dsh-neu] [role='treeitem'][class*='sessionRow']:hover,",
+			"  body[data-dsh-neu] [role='treeitem'][class*='projectRow']:hover {",
+			"    background-color: var(--dsw-alias-interactive-bg-hover);",
+			"    box-shadow: var(--dsh-neu-raise-sm);",
+			"  }",
+			"}",
+			"body[data-dsh-neu] [role='treeitem'][class*='sessionRow'][aria-selected='true'] {",
+			"  box-shadow: inset 2px 0 0 var(--dsw-alias-brand-primary), var(--dsh-neu-inset);",
+			"}",
+			"body[data-dsh-neu] button[class*='newSession'] {",
+			"  border-color: transparent;",
+			"  box-shadow: var(--dsh-neu-raise-sm);",
+			"  transition: box-shadow 160ms ease;",
+			"}",
+			"body[data-dsh-neu] button[class*='newSession']:hover {",
+			"  box-shadow: var(--dsh-neu-raise);",
+			"}",
+			"body[data-dsh-neu] button[class*='newSession']:active {",
+			"  box-shadow: var(--dsh-neu-inset);",
+			"}",
+			"body[data-dsh-neu] button[class*='newSession']:focus-visible {",
+			"  outline: 2px solid var(--dsw-alias-brand-primary);",
+			"  outline-offset: 2px;",
 			"}",
 			"/* Glassmorphism: the composer and its popovers share one DOM subtree.",
 			"   Keep the card's frost on a sibling pseudo-layer so the card does not",
@@ -153,7 +192,50 @@ window.__ModuleLoader__.load({
 			"  background-color: transparent;",
 			"}",
 			"body[data-dsh-neu][data-ds-dark-theme] [data-composer-card]::before {",
-			"  background-color: color-mix(in srgb, var(--dsw-specific-input-major) 45%, transparent);",
+			"  /* A 40% frost lets the canvas/footer boundary behind the card show",
+			"     through as a hard horizontal band. Keep the blur but make the",
+			"     fill nearly opaque so the composer reads as one surface. */",
+			"  background-color: color-mix(in srgb, var(--dsw-specific-input-major) 92%, transparent);",
+			"}",
+			"body[data-dsh-neu][data-ds-dark-theme] [data-composer-card] [class*='input'] {",
+			"  /* The native input grain ends at the toolbar row and reads as a",
+			"     lighter rectangle inside the capsule; the card surface owns the",
+			"     texture instead. */",
+			"  background-image: none;",
+			"}",
+			"body[data-dsh-neu][data-ds-dark-theme] [class*='composerSeat'] {",
+			"  /* The native seat gradient fades to an opaque base color over the",
+			"     canvas grain, so the footer reads as a flat black band. Let the",
+			"     conversation surface continue behind the capsule instead. */",
+			"  background-image: none;",
+			"}",
+			"/* Composer controls sit on the recessed capsule as raised chips. */",
+			"body[data-dsh-neu] [data-composer-card] button[class*='add'],",
+			"body[data-dsh-neu] [data-composer-card] button[class*='primary'] {",
+			"  box-shadow: var(--dsh-neu-raise-sm);",
+			"  transition: box-shadow 160ms ease;",
+			"}",
+			"body[data-dsh-neu] [data-composer-card] button[class*='add']:hover,",
+			"body[data-dsh-neu] [data-composer-card] button[class*='primary']:hover {",
+			"  box-shadow: var(--dsh-neu-raise), 0 0 12px var(--dsh-neu-accent-glow);",
+			"}",
+			"body[data-dsh-neu] [data-composer-card] button[class*='add']:active,",
+			"body[data-dsh-neu] [data-composer-card] button[class*='primary']:active {",
+			"  box-shadow: var(--dsh-neu-inset);",
+			"}",
+			"body[data-dsh-neu] [data-composer-card] button[class*='trigger'] {",
+			"  border-radius: 10px;",
+			"  transition: box-shadow 160ms ease, background-color 160ms ease;",
+			"}",
+			"body[data-dsh-neu] [data-composer-card] button[class*='trigger']:hover {",
+			"  background-color: var(--dsw-alias-interactive-bg-hover);",
+			"  box-shadow: var(--dsh-neu-raise-sm);",
+			"}",
+			"body[data-dsh-neu] [data-composer-card] button[class*='trigger']:active {",
+			"  box-shadow: var(--dsh-neu-inset);",
+			"}",
+			"body[data-dsh-neu] [data-composer-card]:focus-within {",
+			"  box-shadow: var(--dsh-neu-inset-focus), 0 0 0 2px var(--dsh-neu-focus-ring);",
 			"}",
 
 			"/* Keep the conversation canvas uniform. A large radial spotlight here",
@@ -166,11 +248,11 @@ window.__ModuleLoader__.load({
 			"body[data-dsh-neu][data-ds-dark-theme] div[data-phase] {",
 			"  background-image: url(\"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27160%27 height=%27160%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.8%27 numOctaves=%272%27 stitchTiles=%27stitch%27/%3E%3CfeColorMatrix type=%27saturate%27 values=%270%27/%3E%3C/filter%3E%3Crect width=%27160%27 height=%27160%27 filter=%27url(%23n)%27 opacity=%270.1%27/%3E%3C/svg%3E\");",
 			"}",
-			"/* Details panel keeps the same grain. */",
-			"body[data-dsh-neu] [class*='detailsCol'] {",
+			"/* Right sidebar panel keeps the same grain (ui-layout rightbarCol). */",
+			"body[data-dsh-neu] [class*='rightbarCol'] {",
 			"  background-image: url(\"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27160%27 height=%27160%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.8%27 numOctaves=%272%27 stitchTiles=%27stitch%27/%3E%3CfeColorMatrix type=%27saturate%27 values=%270%27/%3E%3C/filter%3E%3Crect width=%27160%27 height=%27160%27 filter=%27url(%23n)%27 opacity=%270.08%27/%3E%3C/svg%3E\");",
 			"}",
-			"body[data-dsh-neu][data-ds-dark-theme] [class*='detailsCol'] {",
+			"body[data-dsh-neu][data-ds-dark-theme] [class*='rightbarCol'] {",
 			"  background-image: url(\"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27160%27 height=%27160%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.8%27 numOctaves=%272%27 stitchTiles=%27stitch%27/%3E%3CfeColorMatrix type=%27saturate%27 values=%270%27/%3E%3C/filter%3E%3Crect width=%27160%27 height=%27160%27 filter=%27url(%23n)%27 opacity=%270.1%27/%3E%3C/svg%3E\");",
 			"}",
 			"/* User and consumed-steering bubbles: barely-raised chips with a",
@@ -213,7 +295,7 @@ window.__ModuleLoader__.load({
 			"  box-shadow: var(--dsh-neu-card-raise);",
 			"}",
 			"body[data-dsh-neu][data-ds-dark-theme] [data-tool] {",
-			"  background-image: linear-gradient(145deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0) 42%);",
+			"  background-image: linear-gradient(145deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0) 42%);",
 			"}",
 			"/* Reasoning rows: same card language as tool rows (ReasoningRow's",
 			"   data-variant='think' — ui-conversation sources). */",
@@ -228,13 +310,22 @@ window.__ModuleLoader__.load({
 			"  box-shadow: var(--dsh-neu-card-raise);",
 			"}",
 			"body[data-dsh-neu][data-ds-dark-theme] [data-variant='think'] {",
-			"  background-image: linear-gradient(145deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0) 42%);",
+			"  background-image: linear-gradient(145deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0) 42%);",
 			"}",
 			"/* Raised-card feedback is non-motion, so keep the stronger perimeter",
 			"   shadow available even when the OS asks to reduce motion. */",
 			"body[data-dsh-neu] [data-tool]:hover,",
 			"body[data-dsh-neu] [data-variant='think']:hover {",
 			"  box-shadow: var(--dsh-neu-card-raise-strong);",
+			"}",
+			"/* Expanded reasoning is long-form text, not a card. In the dark palette",
+			"   drop the raised surface and keep one inset accent so the block reads",
+			"   without a glowing perimeter. The collapsed preview keeps its chip. */",
+			"body[data-dsh-neu][data-ds-dark-theme] [data-variant='think']:not([data-preview]) {",
+			"  background-color: transparent;",
+			"  background-image: none;",
+			"  border-radius: 0;",
+			"  box-shadow: inset 2px 0 0 var(--dsw-alias-border-l3);",
 			"}",
 			"/* Micro-interactions: CSS-only, gated on reduced-motion (matching",
 			"   the official ReasoningRow shimmer gate). */",
@@ -263,8 +354,7 @@ window.__ModuleLoader__.load({
 			"  body[data-dsh-neu] [data-composer-card] {",
 			"    transition: box-shadow 160ms ease;",
 			"  }",
-			"  body[data-dsh-neu] [data-composer-card]:hover,",
-			"  body[data-dsh-neu] [data-composer-card]:focus-within {",
+			"  body[data-dsh-neu] [data-composer-card]:hover:not(:focus-within) {",
 			"    box-shadow: var(--dsh-neu-inset-focus);",
 			"  }",
 			"  /* Tool rows (outer call and nested sub-calls alike): deepen the shadow",
@@ -323,35 +413,19 @@ window.__ModuleLoader__.load({
 			return id === DEFAULT_SKIN || SKINS.some((skin) => skin.id === id);
 		}
 
-		/**
-		 * Narrow the Host settings section at the browser boundary. The Host
-		 * schema is authoritative; this guard only prevents an unusable value from
-		 * reaching ThemeRuntime when a stale or incompatible server responds.
-		 */
-		function decodeSkinSettings(section) {
-			if (typeof section !== "object" || section === null || Array.isArray(section)) return void 0;
-			const preference = section.preference;
-			return isSkinPreference(preference) ? { preference } : void 0;
-		}
 		//#endregion
 
 		//#region dsh-neu-theme: settings row store
 		/**
-		 * Skin row slot store: a mirror of the theme service snapshot. The
-		 * plugin's apply-world change listener is the only writer; the row
-		 * component reads via props.useStore.
+		 * Skin row slot store: the selected catalog id. The plugin's apply
+		 * world is the only writer; the row component reads via props.useStore.
 		 */
 		function createSkinStore() {
 			return (0, _store.defineStore)({
-				init: () => ({
-					skin: DEFAULT_SKIN,
-					revision: -1
-				}),
+				init: () => ({ skin: DEFAULT_SKIN }),
 				actions: {
-					sync: (d, skin, revision) => {
-						if (revision <= d.revision) return;
+					sync: (d, skin) => {
 						d.skin = skin;
-						d.revision = revision;
 					}
 				}
 			});
@@ -576,63 +650,36 @@ window.__ModuleLoader__.load({
 
 		//#region dsh-neu-theme: client plugin body
 		/**
-		 * Required services: theme runtime (skins, switching), the settings scope
-		 * (Host-backed preference transport), and slots/locale (the settings row).
+		 * Required services: theme runtime, ConfigForms and remote settings
+		 * transport, plus slots/locale for the settings row.
 		 */
 		const inject = [
 			"slots",
 			"locale",
 			"theme",
-			"connection",
 			"remote",
-			"settingsScope"
+			"configForms"
 		];
 
 		/**
-		 * Client plugin body: register the Neumorphism flavors into the theme
-		 * runtime, restore the Host-backed choice, keep the soft-UI shadow layer in
-		 * lockstep with the active preference, keep the row's store in sync
-		 * with theme/change, and register the picker into Settings → General.
+		 * Client plugin body: restore the profile Config choice as a token
+		 * layer over the matching built-in palette, keep the soft-UI shadow
+		 * layer in lockstep with the selection, and register the picker into
+		 * Settings → General.
 		 * @param ctx - client cordis context.
 		 */
 		function apply(ctx) {
-			const disposers = SKINS.map((skinDefinition) => ctx.theme.register(skinDefinition));
-			ctx.effect(() => () => {
-				for (const dispose of disposers) dispose();
-			}, "dsh-neu-theme: theme registration");
-
-			// The Host settings document is the durable authority. Binding is
-			// intentionally non-blocking: the scope starts in a provisional state
-			// and adopts a validated section when its background read settles.
-			const skinSettings = ctx.settingsScope.bind({
-				namespace: SKIN_SETTINGS_NAMESPACE,
-				decode: decodeSkinSettings
-			});
-			const adoptSkinSettings = () => {
-				const saved = skinSettings.getSnapshot().value?.[SKIN_SETTINGS_FIELD];
-				if (!isSkinPreference(saved)) return;
-				const current = ctx.theme.getTheme().preference;
-				if (saved === DEFAULT_SKIN) {
-					// `system` means "no custom skin" here. Do not overwrite a
-					// user's built-in light/dark preference during initial adoption.
-					if (SKINS.some((skin) => skin.id === current)) {
-						ctx.theme.setTheme(DEFAULT_SKIN);
-					}
-					return;
-				}
-				if (current !== saved) ctx.theme.setTheme(saved);
-			};
-			ctx.effect(() => {
-				const dispose = skinSettings.subscribe(adoptSkinSettings);
-				adoptSkinSettings();
-				return dispose;
-			}, "dsh-neu-theme: settings preference adoption");
+			// DSH 0.2 persists only the built-in light/dark/system preference, and
+			// ui-theme re-adopts that section whenever it refreshes. A third-party
+			// theme id therefore cannot stay selected across those refreshes; the
+			// skin lives in this entry's Config and is applied as one token-override
+			// layer over the matching built-in base palette.
+			const skinSettings = ctx.configForms.get(SKIN_SETTINGS_ENTRY_ID);
+			const baseSettings = ctx.configForms.get(BASE_THEME_ENTRY_ID);
 
 			// Soft-UI shadow layer, mounted ONLY while a Neumorphism flavor is
-			// the active preference. Selecting Default (or any built-in
-			// appearance) must leave the document exactly as dsh ships it —
-			// colors are handled by the ThemeRuntime, the shadow layer and the
-			// body attribute belong to the plugin and follow the same switch.
+			// selected. Selecting Default (or any built-in appearance) must leave
+			// the document exactly as dsh ships it.
 			let styleNode = null;
 			const ensureShadow = () => {
 				if (styleNode !== null) return;
@@ -648,52 +695,191 @@ window.__ModuleLoader__.load({
 					styleNode = null;
 				}
 			};
-			const syncShadow = (snapshot) => {
-				const neumorphic = SKINS.some((skinDefinition) => skinDefinition.id === snapshot.preference);
-				if (neumorphic) {
-					ensureShadow();
-					document.body.dataset.dshNeu = "";
-				} else {
-					removeShadow();
-					delete document.body.dataset.dshNeu;
-				}
-			};
-			ctx.effect(() => () => {
-				removeShadow();
-				delete document.body.dataset.dshNeu;
-			}, "dsh-neu-theme: soft-ui shadow layer");
 
 			const skinStore = createSkinStore();
 			let skinBound;
-			const syncSkin = (snapshot) => {
-				skinBound?.sync(snapshot.preference, snapshot.revision);
-			};
-			ctx.on("theme/change", syncSkin);
-			ctx.on("theme/change", syncShadow);
+			let selected = DEFAULT_SKIN;
+			let overrideDispose = null;
+			let appliedBase = null;
+			let restored = false;
+			let applying = false;
+			let pendingSelection = null;
 
-			// The explicit sync covers the no-change case where the Host has not
-			// returned a custom preference (or the browser is remote/memory mode).
-			syncShadow(ctx.theme.getTheme());
+			const publish = () => skinBound?.sync(selected);
+
+			const reportWriteFailure = (error) => {
+				ctx.logger?.warn("dsh-neu-theme: could not persist the skin preference", error);
+			};
+
+			const readStoredSkin = () => {
+				const saved = skinSettings.getSnapshot().value?.[SKIN_SETTINGS_FIELD];
+				return isSkinPreference(saved) ? saved : DEFAULT_SKIN;
+			};
+
+			// A local write owns the selection until the accepted section shows the
+			// same value (or the write fails). Releasing it earlier would let a stale
+			// snapshot undo the click and then re-apply it.
+			const finishSelectionWrite = (failed) => {
+				if (failed || readStoredSkin() === pendingSelection) pendingSelection = null;
+				if (pendingSelection === null) adoptSkinSettings();
+			};
+
+			const removeOverride = () => {
+				if (overrideDispose === null) return;
+				const dispose = overrideDispose;
+				overrideDispose = null;
+				// A theme/change listener can dispose this layer while the runtime is
+				// already notifying that event; re-emitting inside the dispatch can
+				// leave the presenter holding the stale token list. Remove the layer
+				// after the current notification turn instead.
+				queueMicrotask(dispose);
+			};
+
+			const applySkin = (id) => {
+				const skin = SKINS.find((candidate) => candidate.id === id);
+				if (skin === undefined) return;
+				selected = id;
+				appliedBase = skin.colorScheme;
+				// overrideTokens and setTheme publish theme/change synchronously.
+				// Keep the opt-out listener from mistaking our own writes for a
+				// built-in choice made elsewhere.
+				applying = true;
+				try {
+					removeOverride();
+					const tokens = {};
+					for (const [name, value] of Object.entries(skin.tokens)) {
+						// One value per palette: repeat the skin's concrete color so the
+						// override stays legible whichever base scheme is active.
+						tokens[name] = { light: value, dark: value };
+					}
+					overrideDispose = ctx.theme.overrideTokens(SKIN_OVERRIDE_SOURCE, tokens);
+					// Switch the built-in base palette so every token this catalog does
+					// not override still matches the skin's light/dark semantics.
+					ctx.theme.setTheme(skin.colorScheme);
+				} finally {
+					applying = false;
+				}
+				ensureShadow();
+				document.body.dataset.dshNeu = "";
+				publish();
+			};
+
+			const clearSkin = (restoreSystem) => {
+				selected = DEFAULT_SKIN;
+				appliedBase = null;
+				removeOverride();
+				removeShadow();
+				delete document.body.dataset.dshNeu;
+				if (restoreSystem) ctx.theme.setTheme(DEFAULT_SKIN);
+				publish();
+			};
+
+			// ui-theme adopts its durable preference asynchronously. Wait until its
+			// accepted section and the runtime agree before restoring the skin, so
+			// that the first adoption cannot immediately overwrite it.
+			const baseSettled = () => {
+				const snapshot = baseSettings.getSnapshot();
+				const value = snapshot.value;
+				if (snapshot.status !== "ready" || value === null || typeof value !== "object") return false;
+				return typeof value.preference === "string" && ctx.theme.getTheme().preference === value.preference;
+			};
+
+			const restoreSkin = () => {
+				if (restored || pendingSelection !== null || !baseSettled()) return;
+				restored = true;
+				const saved = readStoredSkin();
+				if (saved !== DEFAULT_SKIN) applySkin(saved);
+			};
+
+			const adoptSkinSettings = () => {
+				if (pendingSelection !== null) {
+					if (readStoredSkin() !== pendingSelection) return;
+					pendingSelection = null;
+				}
+				if (!restored) {
+					restoreSkin();
+					return;
+				}
+				const saved = readStoredSkin();
+				if (saved === DEFAULT_SKIN) {
+					// Another client cleared the skin. Drop the local layer but leave
+					// the base palette to the ui-theme preference that client chose.
+					if (selected !== DEFAULT_SKIN) clearSkin(false);
+					return;
+				}
+				if (saved !== selected) applySkin(saved);
+			};
+
+			const onThemeChange = (snapshot) => {
+				if (applying) return;
+				if (!restored) {
+					restoreSkin();
+					return;
+				}
+				if (selected === DEFAULT_SKIN) return;
+				// Our own base-palette switch (or ui-theme adopting the value we
+				// wrote) keeps the skin. Any other preference is a built-in choice
+				// made elsewhere — the Appearance row or another browser — so drop
+				// the skin instead of forcing it back on the next launch.
+				if (snapshot.preference === appliedBase) return;
+				clearSkin(false);
+				pendingSelection = DEFAULT_SKIN;
+				void skinSettings.unset(SKIN_SETTINGS_FIELD).then(
+					() => finishSelectionWrite(false),
+					(error) => {
+						reportWriteFailure(error);
+						finishSelectionWrite(true);
+					});
+			};
+
+			ctx.effect(() => {
+				const offSkinSettings = skinSettings.subscribe(adoptSkinSettings);
+				const offBaseSettings = baseSettings.subscribe(restoreSkin);
+				const offTheme = ctx.on("theme/change", onThemeChange);
+				return () => {
+					offSkinSettings();
+					offBaseSettings();
+					offTheme();
+				};
+			}, "dsh-neu-theme: profile preference adoption");
+
+			ctx.effect(() => () => {
+				clearSkin(false);
+			}, "dsh-neu-theme: soft-ui shadow layer");
+
+			// Cover values that settled before these subscriptions existed.
+			restoreSkin();
+			adoptSkinSettings();
 
 			ctx.effect(() => ctx.locale.register(SETTINGS_NS, {
 				zh,
 				en
 			}), "dsh-neu-theme: settings row dictionaries");
 
+			const requestSkin = (id) => {
+				if (!isSkinPreference(id)) return;
+				pendingSelection = id;
+				if (id === DEFAULT_SKIN) {
+					// `system` means "no custom skin"; ui-theme owns the base.
+					clearSkin(true);
+				} else {
+					applySkin(id);
+				}
+				const write = id === DEFAULT_SKIN
+					? skinSettings.unset(SKIN_SETTINGS_FIELD)
+					: skinSettings.set(SKIN_SETTINGS_FIELD, id);
+				void write.then(
+					() => finishSelectionWrite(false),
+					(error) => {
+						reportWriteFailure(error);
+						finishSelectionWrite(true);
+					});
+			};
+
 			const skinInjected = (actions) => {
 				skinBound = actions;
-				syncSkin(ctx.theme.getTheme());
-				return {
-					setSkin: (id) => {
-						if (!isSkinPreference(id)) return;
-						ctx.theme.setTheme(id);
-						if (id === DEFAULT_SKIN) {
-							void skinSettings.unset(SKIN_SETTINGS_FIELD);
-						} else {
-							void skinSettings.set(SKIN_SETTINGS_FIELD, id);
-						}
-					}
-				};
+				skinBound.sync(selected);
+				return { setSkin: requestSkin };
 			};
 			ctx.slots.inject("settings.general.item", () => ctx.slots.register({
 				name: "settings.general.item",
@@ -713,3 +899,4 @@ window.__ModuleLoader__.load({
 		return module.exports;
 	}
 });
+

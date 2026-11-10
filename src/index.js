@@ -1,30 +1,27 @@
 /**
  * dsh-neu-theme — Host half.
  *
- * The browser theme registry is still provided by ./client, but the selected
- * skin is a user preference. Register its namespace with the Host settings
- * seam so loopback Web clients persist it in the DSH user document instead of
- * partitioning it by browser origin.
+ * The selected skin is a live profile preference. DSH 0.2 exposes volatile
+ * plugin Config fields through the settings form service, which persists edits
+ * into the active profile's Cordis patch.
  */
 import z from '@deepseek-ai/schemastery'
 
-/** Settings namespace shared by the Host and browser halves. */
-export const SETTINGS_NAMESPACE = 'dsh-neu-theme'
-/** Settings field carrying the selected skin id. */
-export const SETTINGS_FIELD = 'preference'
+/** Loader entry and ConfigForms key; also preserves the legacy settings id. */
+export const SETTINGS_ENTRY_ID = 'dsh-neu-theme'
 /** No custom skin: keep the built-in DSH appearance. */
 export const DEFAULT_SKIN = 'system'
 /** Skin ids accepted at the durable settings boundary. */
 export const SKIN_PREFERENCES = [DEFAULT_SKIN, 'neu-light', 'neu-dark']
 
-/** Durable skin schema, also used by the browser settings scope decoder. */
-export const SkinSettingsSchema = z.object({
-	[SETTINGS_FIELD]: z.union([...SKIN_PREFERENCES]).default(DEFAULT_SKIN),
+/** Live preference projected to the browser and editable in the active profile. */
+export const Config = z.object({
+  preference: z.union([...SKIN_PREFERENCES]).default(DEFAULT_SKIN).volatile(),
 })
 
 /** Host loader entry for the browser implementation exported from `./client`. */
 export function apply(ctx) {
-	ctx.inject(['settings'], (settingsCtx) => {
-		settingsCtx.settings.register(SETTINGS_NAMESPACE, SkinSettingsSchema)
-	})
+  ctx.inject(['settings'], (child) => {
+    child.effect(() => child.settings.configure({ auto: false }, ctx.fiber))
+  })
 }
